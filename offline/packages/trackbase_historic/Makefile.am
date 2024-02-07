@@ -20,6 +20,7 @@ AM_LDFLAGS = \
 
 pkginclude_HEADERS = \
   ActsTransformations.h \
+  cluster_with_sector_side.h \
   TrackSeed.h \
   TrackSeed_v1.h \
   SvtxTrackSeed_v1.h \
@@ -42,6 +43,10 @@ pkginclude_HEADERS = \
   SvtxTrack_FastSim_v3.h \
   SvtxAlignmentStateMap.h \
   SvtxAlignmentStateMap_v1.h \
+  SvtxTrackArray.h \
+  SvtxTrackArray_v1.h \
+  SvtxTrackArrayContainer.h \
+  SvtxTrackArrayContainer_v1.h \
   SvtxTrackMap.h \
   SvtxTrackMap_v1.h \
   SvtxTrackMap_v2.h \
@@ -55,6 +60,7 @@ pkginclude_HEADERS = \
   TrackAnalysisUtils.h 
 
 ROOTDICTS = \
+  cluster_with_sector_side_Dict.cc \
   TrackSeed_Dict.cc \
   TrackSeed_v1_Dict.cc \
   SvtxTrackSeed_v1_Dict.cc \
@@ -76,6 +82,10 @@ ROOTDICTS = \
   SvtxTrack_v2_Dict.cc \
   SvtxTrack_v3_Dict.cc \
   SvtxTrack_v4_Dict.cc \
+  SvtxTrackArray_Dict.cc \
+  SvtxTrackArray_v1_Dict.cc \
+  SvtxTrackArrayContainer_Dict.cc \
+  SvtxTrackArrayContainer_v1_Dict.cc \
   SvtxTrack_FastSim_Dict.cc \
   SvtxTrack_FastSim_v1_Dict.cc \
   SvtxTrack_FastSim_v2_Dict.cc \
@@ -90,6 +100,7 @@ ROOTDICTS = \
 
 pcmdir = $(libdir)
 nobase_dist_pcm_DATA = \
+  cluster_with_sector_side_Dict_rdict.pcm \
   TrackSeed_Dict_rdict.pcm \
   TrackSeed_v1_Dict_rdict.pcm \
   SvtxTrackSeed_v1_Dict_rdict.pcm \
@@ -111,6 +122,10 @@ nobase_dist_pcm_DATA = \
   SvtxTrack_v2_Dict_rdict.pcm \
   SvtxTrack_v3_Dict_rdict.pcm \
   SvtxTrack_v4_Dict_rdict.pcm \
+  SvtxTrackArray_Dict_rdict.pcm \
+  SvtxTrackArray_v1_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_v1_Dict_rdict.pcm \
   SvtxTrack_FastSim_Dict_rdict.pcm \
   SvtxTrack_FastSim_v1_Dict_rdict.pcm \
   SvtxTrack_FastSim_v2_Dict_rdict.pcm \
@@ -147,6 +162,8 @@ libtrackbase_historic_io_la_SOURCES = \
   SvtxTrack_v2.cc \
   SvtxTrack_v3.cc \
   SvtxTrack_v4.cc \
+  SvtxTrackArray_v1.cc \
+  SvtxTrackArrayContainer_v1.cc \
   SvtxTrack_FastSim.cc \
   SvtxTrack_FastSim_v1.cc \
   SvtxTrack_FastSim_v2.cc \

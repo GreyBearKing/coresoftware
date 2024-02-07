@@ -46,6 +46,8 @@ pkginclude_HEADERS = \
   CaloTruthEval.h \
   DSTCompressor.h \
   DSTEmulator.h \
+  DSTTrackArrayWriter.h \
+  DSTTrackArrayReader.h \
   EventEvaluator.h \
   FillTruthRecoMatchMap.h \
   FillClusMatchTree.h \
@@ -78,16 +80,16 @@ pkginclude_HEADERS = \
 
 ROOTDICTS = \
   TrackEvaluationContainer_Dict.cc \
-  TrackEvaluationContainerv1_Dict.cc
+  TrackEvaluationContainerv1_Dict.cc 
 
 pcmdir = $(libdir)
 nobase_dist_pcm_DATA = \
   TrackEvaluationContainer_Dict_rdict.pcm \
-  TrackEvaluationContainerv1_Dict_rdict.pcm
+  TrackEvaluationContainerv1_Dict_rdict.pcm 
 
 libg4eval_io_la_SOURCES = \
   $(ROOTDICTS) \
-  TrackEvaluationContainerv1.cc
+  TrackEvaluationContainerv1.cc 
 
 libg4eval_la_SOURCES = \
   BaseTruthEval.cc \
@@ -97,6 +99,8 @@ libg4eval_la_SOURCES = \
   CaloRawTowerEval.cc \
   CaloTruthEval.cc \
   DSTEmulator.cc \
+  DSTTrackArrayWriter.cc \
+  DSTTrackArrayReader.cc \
   EventEvaluator.cc \
   FillTruthRecoMatchMap.cc \
   FillClusMatchTree.cc \
