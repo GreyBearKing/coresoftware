@@ -259,7 +259,6 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   float tpc_seed_m_Y0 = NAN;
   float tpc_seed_m_slope = NAN;
   float tpc_seed_m_Z0 = NAN;
-
   short int tpc_seed_m_crossing = std::numeric_limits<short int>::max();
 
   bool does_silicon_seed_exist = true;
@@ -268,11 +267,9 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   float silicon_seed_m_Y0 = NAN;
   float silicon_seed_m_slope = NAN;
   float silicon_seed_m_Z0 = NAN;
-
   short int silicon_seed_m_crossing = std::numeric_limits<short int>::max();
 
   //ClusterKeySet silicon_cluster_keys;
-
   //information from SvtxTrack_v4
   // track information
   //don't include seeds as we will store thier direct information
@@ -295,15 +292,7 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   // track state  information
   //find a way to not use this
   //StateMap _states;  //< path length => state object
-
-
-
-  //make a Cluster structure here that has information and hitsetkey
-
-  
-
   //to make hitset key, first 8 bits are z, next 8 bits are phi, next 8 bits are layer, last 8 bits are id
-
   
   struct cluster_with_sector_side cluster_array[59];
   

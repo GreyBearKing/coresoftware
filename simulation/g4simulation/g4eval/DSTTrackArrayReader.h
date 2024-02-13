@@ -15,6 +15,7 @@
 #include <trackbase_historic/TrackSeed_v1.h>
 #include <trackbase_historic/TrackSeedContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
+#include <trackbase/ActsGeometry.h>
 
 #include <map>
 #include <set>
@@ -85,10 +86,17 @@ class DSTTrackArrayReader : public SubsysReco
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
   //DSTContainer* m_container = nullptr;
+  SvtxTrackArray_v1* trackContainer = nullptr;
+
+
+  TrackSeed_v1* TPCSeed = nullptr;
+  TrackSeed_v1* SiliconSeed = nullptr;
+  TrkrClusterv5* m_cluster = nullptr;
 
   //! flags
   int m_flags = WriteEvent | WriteClusters | WriteTracks;
   
+  ActsGeometry* tgeometry = nullptr;
 
   //@}
 

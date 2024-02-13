@@ -86,7 +86,10 @@ void SvtxTrackArray_v1::CopyFrom( const SvtxTrackArray& source )
   for(int i = 0; i<59; i++){
     //check if source has valid cluster
     if(source.getValid(i)){
+        //setClusKey(i, source.getClusKey(i));
         setValid(i, source.getValid(i));
+        setLocalX(i, source.getLocalX(i));
+        setLocalY(i, source.getLocalY(i));
         setSide(i, source.getSide(i));
         setSectorId(i, source.getSectorId(i));
         setAdc(i, source.getAdc(i));
@@ -97,7 +100,7 @@ void SvtxTrackArray_v1::CopyFrom( const SvtxTrackArray& source )
         setZSize(i, source.getZSize(i));
         setOverlap(i, source.getOverlap(i));
         setEdge(i, source.getEdge(i));
-
+        setSubSurfKey(i, source.getSubSurfKey(i));
     }
   }
 

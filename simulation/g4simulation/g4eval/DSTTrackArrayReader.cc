@@ -35,6 +35,9 @@
 #include <trackbase_historic/SvtxTrack_v4.h>
 #include <trackbase_historic/SvtxTrackState_v1.h>
 #include <trackbase_historic/SvtxTrackArray_v1.h>
+
+#include <trackbase/ActsGeometry.h>
+#include <trackbase_historic/ActsTransformations.h>
 //#include <trackbase_historic/TrackSeed_v1.h>
 
 #include <algorithm>
@@ -42,6 +45,7 @@
 #include <cassert>
 #include <iostream>
 #include <numeric>
+#include <TVector3.h>
 //#define __STDC_LIMIT_MACROS
 
 //_____________________________________________________________________
@@ -160,6 +164,7 @@ int DSTTrackArrayReader::process_event(PHCompositeNode* topNode)
   evaluate_track_and_clusters();
 
   m_track_array_container->Reset();
+ 
   
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -168,13 +173,23 @@ int DSTTrackArrayReader::process_event(PHCompositeNode* topNode)
 int DSTTrackArrayReader::End(PHCompositeNode*)
 {
   std::cout << "DST reader finishes" << "\n";
+  //delete TPCSeed;
+  //delete SiliconSeed;
+  //delete m_cluster;
+  //delete trackContainer;
 
   return Fun4AllReturnCodes::EVENT_OK; }
 
 //_____________________________________________________________________
 int DSTTrackArrayReader::load_nodes( PHCompositeNode* topNode)
 {
+  tgeometry = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
 
+    if (!tgeometry)
+    {
+      std::cout << PHWHERE << "No Acts geometry on node tree. Can't  continue."
+                << std::endl;
+    }
   // get necessary nodes
   //m_track_map = findNode::getClass<SvtxTrackMap>(topNode, "SvtxTrackMap");
   
@@ -219,7 +234,7 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
          
           //m_track_map->insert(track);
           std::cout << __FILE__ << "::" << __func__ << "::" << __LINE__ << std::endl;
-          auto trackContainer = (SvtxTrackArray_v1*)m_track_array_container->get_trackarray(iTrk);
+          trackContainer = (SvtxTrackArray_v1*)m_track_array_container->get_trackarray(iTrk);
           
           //now put this information back into original container
 
@@ -252,9 +267,11 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
           { track->insert_state(static_cast<SvtxTrackState*>(iter->second->CloneMe() ) ) ; }  
           */
           //Make TPCSeed and SiliconSeed
-          TrackSeed_v1* TPCSeed = new TrackSeed_v1();
-          TrackSeed_v1* SiliconSeed = new TrackSeed_v1();
+          //TrackSeed_v1* TPCSeed = new TrackSeed_v1();
+          //TrackSeed_v1* SiliconSeed = new TrackSeed_v1();
+          //TrackSeed_v1 TPCSeedObject;
           TPCSeed = new TrackSeed_v1();
+          //TPCSeed = &TPCSeedObject;
           SiliconSeed = new TrackSeed_v1();
 
           std::cout << "Before TPC seeds" << std::endl;
@@ -267,9 +284,7 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
             TPCSeed->set_Z0(trackContainer->tpc_seed_get_Z0());
             TPCSeed->set_crossing(trackContainer->tpc_seed_get_crossing());
 
-           
-
-      
+          
             /*
             for(int TPClayer = 7; TPClayer < 59; TPClayer++){
                 if(trackContainer->getClusKey(TPClayer)==0){
@@ -336,6 +351,9 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
               std::cout << "No cluster at layer: " << layer << std::endl;
               continue;
             }
+            std::cout << "Valid cluster at layer " << layer << ": " << trackContainer->getValid(layer) << std::endl;
+            
+
             //std::cout << "layer "<< layer << " clusterKey: " << clusterkey << std::endl;
             std::cout << "layer "<< layer << std::endl;
             //trackContainer->getClusKey(layer) 
@@ -346,8 +364,10 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
               TrkrId = 0;  //mvtx
             }else if(layer >= 3 && layer <7){
               TrkrId = 1; //intt
-            }else{
+            }else if(layer >= 7 && layer <55){
               TrkrId = 2; //tpc
+            }else{
+              TrkrId = 3; //higher layer
             }
             uint8_t layerbyte = (uint8_t) layer;
 
@@ -359,15 +379,27 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
 
             std::cout << "Generated hitsetkey: " << ((uint32_t) TrkrId << 24) + ((uint32_t) layerbyte << 16 ) + ((uint32_t) trackContainer->getSectorId(layer) << 8) + trackContainer->getSide(layer) << std::endl;
             //(TrkrId <<24)+(layerbyte << 16 )+subsurfkey;
-            //TrkrDefs::hitsetkey hitsetkey = (TrkrId << 24)+(layerbyte << 16 )+trackContainer->getSubSurfKey(layer);
-            TrkrDefs::hitsetkey hitsetkey = ((uint32_t) TrkrId << 24) + ((uint32_t) layerbyte << 16 ) + ((uint32_t) trackContainer->getSectorId(layer) << 8) + trackContainer->getSide(layer);
+            TrkrDefs::hitsetkey hitsetkey = ((uint32_t)TrkrId << 24)+((uint32_t)layerbyte << 16 )+ + ((uint32_t) trackContainer->getSectorId(layer) << 8) + trackContainer->getSide(layer);
+            if(hitsetkey != TrkrDefs::getHitSetKeyFromClusKey(trackContainer->getClusKey(layer))){
+              std::cout << "Hitsetkey does not match original" << std::endl;
+              std::cout << "Original: " << TrkrDefs::getHitSetKeyFromClusKey(trackContainer->getClusKey(layer)) << std::endl;
+              std::cout << "Generated: " << hitsetkey << std::endl;
+
+              std::cout << "Sector from generated: " << TrkrDefs::getPhiElement(hitsetkey) << std::endl;
+              std::cout << "Side from generated: " << TrkrDefs::getZElement(hitsetkey) << std::endl;
+            }
+            
+            
+            //TrkrDefs::hitsetkey hitsetkey = ((uint32_t) TrkrId << 24) + ((uint32_t) layerbyte << 16 ) + ((uint32_t) trackContainer->getSectorId(layer) << 8) + trackContainer->getSide(layer);
+          
+          
           //make cluster object
-          TrkrClusterv5* m_cluster = new TrkrClusterv5();
-          //m_cluster = new TrkrClusterv5();
+          //TrkrClusterv5* m_cluster = new TrkrClusterv5();
+          m_cluster = new TrkrClusterv5();
 
           //layer = TrkrDefs::getLayer(cluster_key);
-          m_cluster->setPosition(0,trackContainer->getLocalX(layer));
-          m_cluster->setPosition(1,trackContainer->getLocalY(layer));
+          m_cluster->setLocalX(trackContainer->getLocalX(layer));
+          m_cluster->setLocalY(trackContainer->getLocalY(layer));
           m_cluster->setSubSurfKey(trackContainer->getSubSurfKey(layer));
           m_cluster->setPhiError(trackContainer->getRPhiError(layer));
           m_cluster->setZError(trackContainer->getZError(layer));
@@ -383,14 +415,28 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
 
           //key should be cluskey
 
+          //comment out generating key
+          
+
+
           //clus key is hitsetkey for upper 32 bits
           // and cluster id for lower 32 bits
           bool foundCluster = false;
           //trackseed lists cluster keys
           for(uint32_t index = 0; index < 1000 && !foundCluster; index++){
-            TrkrDefs::cluskey clusterkey = ((uint64_t)hitsetkey << 32) + index;
+            TrkrDefs::cluskey clusterkey = ((uint64_t)hitsetkey << 32) + (uint64_t)index;
             
             if(!m_cluster_map->findCluster(clusterkey)){
+              std::cout << "Index: " << index << std::endl;
+              std::cout << "generated clusterkey: " << clusterkey << std::endl;
+              std::cout << "Clusterkey layer: " << unsigned(TrkrDefs::getLayer(clusterkey)) << std::endl;
+              std::cout << "Clusterkey sector Id: " << unsigned(TrkrDefs::getPhiElement(clusterkey)) << std::endl;
+              std::cout << "Clusterkey side: " << unsigned(TrkrDefs::getZElement(clusterkey)) << std::endl;
+              std::cout << "m_cluster zSize: " << m_cluster->getZSize() << std::endl;
+              std::cout << "m_cluster zError: " << m_cluster->getZError() << std::endl;
+              std::cout << "m_cluster local x: " << m_cluster->getLocalX() << std::endl;
+              std::cout << "m_cluster local y: " << m_cluster->getLocalY() << std::endl;
+
               std::cout << "identify cluster" << std::endl;
               m_cluster->identify();
               m_cluster_map->addClusterSpecifyKey(clusterkey, m_cluster);
@@ -412,11 +458,22 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
 
           }
           //delete m_cluster;
+          //m_cluster_map->identify();
           }
-          track->set_silicon_seed(SiliconSeed);
-          m_silicon_seed_container->insert(SiliconSeed);
-          track->set_tpc_seed(TPCSeed);
-          m_tpc_seed_container->insert(TPCSeed);
+          if(trackContainer->get_does_silicon_seed_exist()){
+            track->set_silicon_seed(SiliconSeed);
+          
+            m_silicon_seed_container->insert(SiliconSeed);
+          }else{
+            track->set_silicon_seed(nullptr);
+          }
+          if(trackContainer->get_does_tpc_seed_exist()){
+            track->set_tpc_seed(TPCSeed);
+            m_tpc_seed_container->insert(TPCSeed);
+          }else{
+            track->set_tpc_seed(nullptr);
+          }
+          m_tpc_seed_container->identify();
           //m_track_map->insertWithKey(track,key);
           //insert without key
           m_track_map->insert(track);
@@ -425,5 +482,63 @@ void DSTTrackArrayReader::evaluate_track_and_clusters()
           }
           //delete TPCSeed;
           //delete SiliconSeed;
+          m_cluster_map->identify();
+
+      /*
+          std::vector<Acts::Vector3> clusterPositions;
+          std::vector<TrkrDefs::cluskey> clusterKeys;
+          clusterKeys.insert(clusterKeys.end(), tpcseed->begin_cluster_keys(),
+			    tpcseed->end_cluster_keys());
+          if(silseed)
+	          {
+	           clusterKeys.insert(clusterKeys.end(), silseed->begin_cluster_keys(),
+			         silseed->end_cluster_keys());
+	          }
+          TrackFitUtils::getTrackletClusters(tgeometry, m_clustermap, 
+					 clusterPositions, clusterKeys);
+          std::vector<float> fitparams = TrackFitUtils::fitClusters(clusterPositions, clusterKeys);
+
+*/          
+/*
+      std::vector<Acts::Vector3> clusterPositions;
+      std::vector<TrkrDefs::cluskey> clusterKeys;
+      clusterKeys.insert(clusterKeys.end(), tpcseed->begin_cluster_keys(),
+			 tpcseed->end_cluster_keys());
+      if(silseed)
+	{
+	  clusterKeys.insert(clusterKeys.end(), silseed->begin_cluster_keys(),
+			     silseed->end_cluster_keys());
+	}
+      TrackFitUtils::getTrackletClusters(tgeometry, m_cluster_map, 
+					 clusterPositions, clusterKeys);
+
+        for (const auto& hitsetkey : m_cluster_map->getHitSetKeys())
+      {
+        //int hitsetlayer = TrkrDefs::getLayer(hitsetkey);
+        auto range = m_cluster_map->getClusters(hitsetkey);
+        for (auto iter = range.first; iter != range.second; ++iter)
+        {
+          TrkrDefs::cluskey cluster_key = iter->first;
+          TrkrCluster* cluster = m_cluster_map->findCluster(cluster_key);
+	       // SvtxTrack* track = nullptr;//best_track_from(cluster_key);
+          //float niter = 0;
+         
+          //float hitID = (float) cluster_key;
+          cluster->identify();
+          std::cout << "Hitsetkey going into tgeometry: " << hitsetkey << std::endl;
+          std::cout << "Subsurfkey going into tgeometry: " << cluster->getSubSurfKey() << std::endl;
+          Acts::Vector3 cglob;
+          cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
+
+          //fill fitpars and surface
+          //std::vector<float> fitparams = TrackFitUtils::fitClusters(clusterPositions, clusterKeys);
+
+          //now that we have global position, calculate helical fitter based off surface
+          //Acts::Vector3 intersection = HelicalFitter::get_helix_surface_intersection(surface, fitpars, cglob);
+      }
+
         }
+*/
+
+}
  

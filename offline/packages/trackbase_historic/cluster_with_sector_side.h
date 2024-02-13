@@ -31,6 +31,8 @@ struct cluster_with_sector_side{
     //TrkrDefs::cluskey m_cluskey = 0;
     uint8_t m_side;
     uint8_t m_sector_id;
+    //making clusterkey for testing
+    //TrkrDefs::cluskey m_cluskey = 0;
 
     //make bool to see if cluster is filled or not
     bool m_valid = false;

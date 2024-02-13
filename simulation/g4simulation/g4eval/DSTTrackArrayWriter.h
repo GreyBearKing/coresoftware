@@ -13,6 +13,8 @@
 #include <trackbase_historic/SvtxTrackArray_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
 //#include <trackbase_historic/TrkrClusterContainer.h>
+#include <trackbase/ActsGeometry.h>
+#include <trackbase/TrackFitUtils.h>
 
 #include <map>
 #include <set>
@@ -76,6 +78,8 @@ class DSTTrackArrayWriter : public SubsysReco
   //! evaluate track info
   void evaluate_track_and_clusters();
 
+  void evaluate_track_and_cluster_residuals();
+
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
 
   //! flags
@@ -85,6 +89,8 @@ class DSTTrackArrayWriter : public SubsysReco
   SvtxTrackMap* m_track_map = nullptr;
 
   TrkrClusterContainer* m_cluster_map = nullptr;
+
+  ActsGeometry* tgeometry = nullptr;
 
 
 };
