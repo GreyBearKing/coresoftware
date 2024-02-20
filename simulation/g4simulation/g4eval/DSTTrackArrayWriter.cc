@@ -36,12 +36,14 @@
 #include <trackbase_historic/SvtxTrack_v4.h>
 #include <trackbase_historic/SvtxTrackArray_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
+#include <trackermillepedealignment/HelicalFitter.h>
 
 #include <algorithm>
 #include <bitset>
 #include <cassert>
 #include <iostream>
 #include <numeric>
+#include <utility> //for pair
 
 #include <TClonesArray.h>
 #include <TFile.h>
@@ -123,7 +125,7 @@ int DSTTrackArrayWriter::process_event(PHCompositeNode* topNode)
   if( m_track_array_container) {
     m_track_array_container->Reset();
   }
-    evaluate_track_and_clusters();
+    evaluate_track_and_cluster_residuals();
 
 
 
@@ -161,6 +163,8 @@ int DSTTrackArrayWriter::load_nodes( PHCompositeNode* topNode )
   m_cluster_map = findNode::getClass<TrkrClusterContainer>(topNode, "TRKR_CLUSTER");
 
   m_track_array_container = findNode::getClass<SvtxTrackArrayContainer_v1>(topNode, "SvtxTrackArrayContainer");
+
+  tpcGeom = findNode::getClass<PHG4TpcCylinderGeomContainer>(topNode, "CYLINDERCELLGEOM_SVTX");
 
   return Fun4AllReturnCodes::EVENT_OK;
 
@@ -636,6 +640,7 @@ Int_t iTrk = 0;
 
 
     //calculate global position and residuals
+    /*
       std::vector<Acts::Vector3> clusterPositions;
       std::vector<TrkrDefs::cluskey> clusterKeys;
       clusterKeys.insert(clusterKeys.end(), TPCSeed->begin_cluster_keys(),
@@ -647,8 +652,10 @@ Int_t iTrk = 0;
 	    }
       TrackFitUtils::getTrackletClusters(tgeometry, m_cluster_map, 
 					 clusterPositions, clusterKeys);
+      std::vector<float> fitparams = TrackFitUtils::fitClusters(clusterPositions, clusterKeys);
+*/  
 
-
+      //make a loop over clusterKeys, find which position matches our cluster
 
   /*
   //set all clusterkeys = 0
@@ -703,8 +710,130 @@ Int_t iTrk = 0;
       trackContainer->setClusKey(layer, cluster_key);
 
       //TrkrDefs::
+
+      //loop over clusterKeys to match
+
+      std::vector<Acts::Vector3> clusterPositions;
+      std::vector<TrkrDefs::cluskey> clusterKeys;
+      //clusterKeys.push_back(cluster_key);
       
+      clusterKeys.insert(clusterKeys.end(), TPCSeed->begin_cluster_keys(),
+			 TPCSeed->end_cluster_keys());
+      
+      TrackFitUtils::getTrackletClusters(tgeometry, m_cluster_map, 
+					 clusterPositions, clusterKeys);
+      std::cout << "clusterPositions.size(): " << clusterPositions.size() << std::endl;
+      std::vector<float> fitparams = TrackFitUtils::fitClusters(clusterPositions, clusterKeys);
+      std::cout << "clusterKeys[0]" << clusterKeys.at(0) << std::endl;
+      std::cout << "fitParams[0]" << fitparams.at(0) << std::endl;
+      std::cout << "fitParams[1]" << fitparams.at(1) << std::endl;
+      std::cout << "fitParams[2]" << fitparams.at(2) << std::endl;
+      std::cout << "fitParams[3]" << fitparams.at(3) << std::endl;
+      std::cout << "fitParams[4]" << fitparams.at(4) << std::endl;
+      //for(size_t i = 0; i < clusterPositions.size(); i++){
+        //if(clusterKeys[i] == cluster_key){
+          //Acts::Vector3 position = clusterPositions[i];
+          Acts::Vector3 cglob;
+          std::cout << "Before cglob" << std::endl;
+          cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
+          std::cout << "Before surface" << std::endl;
+          auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
+          //HelicalFitter fitter;
+          std::cout << "Before intersection" << std::endl;
+          //Acts::Vector3 intersection = TrackFitUtils::get_helix_pca(fitparams, cglob);
+          Acts::Vector3 intersection = get_helix_surface_intersection(surface, fitparams, cglob);
+          std::cout << "global[0]: " << cglob(0) << std::endl;
+          std::cout << "global[1]: " << cglob(1) << std::endl;
+          std::cout << "global[2]: " << cglob(2) << std::endl;
+          std::cout << "After intersection" << std::endl;
+          std::cout << "Intersection[0]: " << intersection(0) << std::endl;
+          std::cout << "Intersection[1]: " << intersection(1) << std::endl;
+          std::cout << "Intersection[2]: " << intersection(2) << std::endl;
+          float pca_phi = atan2(intersection(1), intersection(0));
+          float cluster_phi = atan2(cglob(1), cglob(0));
+          float dphi = cluster_phi - pca_phi;
+          if (dphi > M_PI)
+          {
+             dphi = 2 * M_PI - dphi;
+          }
+          if (dphi < -M_PI)
+          {
+           dphi = 2 * M_PI + dphi;
+          }
+          float dz = cglob(2) - intersection(2);
+          std::cout << std::fixed;
+          std::cout << std::setprecision(6);
+          std::cout << "cluster phi: " << cluster_phi << std::endl;
+          std::cout << "dPhi: " << dphi << std::endl;
+          std::cout << "dZ: " << dz << std::endl;
+
+
+
+
+          //calculate circle_circle_intersection between helix and tpc layer
+          
+          if(layer > 7 && layer < 55){
+            auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
+            auto radius = geoLayer->get_radius();
+            auto result = TrackFitUtils::circle_circle_intersection(radius, fitparams[0], fitparams[1], fitparams[2]);
+            std::cout << "result(0): " << std::get<0>(result) << std::endl;
+            std::cout << "result(1): " << std::get<1>(result) << std::endl;
+            std::cout << "result(2): " << std::get<2>(result) << std::endl;
+            std::cout << "result(3): " << std::get<3>(result) << std::endl;
+            std::cout << "radius: " << radius << std::endl;
+            std::cout << "z = zlope*radius + z0: " << radius * fitparams[3] + fitparams[4] << std::endl;
+            std::cout << "z = zlope*radius + z0: " << radius * fitparams[3] + fitparams[4] << std::endl;
+           // std::cout << "z = zlope*(x^2+y^2) + z0: " << radius * ((std::get<0>(result) * std::get<0>(result)) + std::get<1>(result)*std::get<1>(result))+ fitparams[4] << std::endl;
+          }
+
+          std::cout << "Cluster local X: " << cluster->getLocalX() << std::endl;
+          std::cout << "Cluster local Y: " << cluster->getLocalY() << std::endl;
+
+
+
+
+          //drift velocity
+          double surfaceZCenter = 52.89; //this is where G4 thinks the surface center is in cm
+          double drift_velocity = 8.0e-3;  // cm/ns
+          double zdriftlength = cluster->getLocalY() * drift_velocity; //cm
+          double zloc = surfaceZCenter - zdriftlength; //local z relative to surface center
+          unsigned int side = TpcDefs::getSide(cluster_key);
+          if(side == 0) zloc = -zloc;
+          Acts::Vector3 glob;
+          Acts::Vector2 local(cluster->getLocalX(), zloc);
+          glob = surface->localToGlobal(tgeometry->geometry().getGeoContext(),
+				  local * Acts::UnitConstants::cm,
+				  Acts::Vector3(1,1,1));
+          std::cout << "Zloc: " << zloc << std::endl;
+          std::cout << "glob(0) before constants: " << glob(0) << std::endl;
+          std::cout << "glob(1) before constants: " << glob(1) << std::endl;
+          std::cout << "glob(2) before constants: " << glob(2) << std::endl;
+          glob /= Acts::UnitConstants::cm;
+          std::cout << "glob(0) after constants: " << glob(0) << std::endl;
+          std::cout << "glob(1) after constants: " << glob(1) << std::endl;
+          std::cout << "glob(2) after constants: " << glob(2) << std::endl;
+
+
+          //surface->transform(tGeometry->geometry().getGeoContext()).inverse() * global;
+          // localFromGlobalResult;
+          
+          double surfaceTolerance = 1e-4;
+          Acts::Result<Acts::Vector2> localFromGlobalResult = surface->globalToLocal(tgeometry->geometry().getGeoContext(), glob * Acts::UnitConstants::cm, Acts::Vector3(1,1,1), surfaceTolerance);
+          Acts::Vector2 localFromGlobal = *localFromGlobalResult;
+          std::cout << "localFromGlobal(0): " << localFromGlobal(0) << std::endl;
+          std::cout << "localFromGlobal(1): " << localFromGlobal(1) << std::endl;
+        
+        
+          Acts::Vector3 localFromGlobalNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * glob;
+          std::cout << "localFromGlobalNoTolerance(0): " << localFromGlobalNoTolerance(0) << std::endl;
+          std::cout << "localFromGlobalNoTolerance(1): " << localFromGlobalNoTolerance(1) << std::endl;
+          std::cout << "localFromGlobalNoTolerance(2): " << localFromGlobalNoTolerance(2) << std::endl;
+
+          std::cout << "localFromGlobalNoTolerance(1) corrected: " << surfaceZCenter + localFromGlobalNoTolerance(1)/drift_velocity << std::endl;
+          
+      //}
     }
+ // }
   }
 
   
@@ -859,7 +988,7 @@ Int_t iTrk = 0;
       std::cout<< "container chisq: " << (m_track_array_container->get_trackarray(iTrk))->get_chisq() << std::endl;
 
 
-
+  /*
       std::cout<< "cluster 1 local x: " << trackContainer->getLocalX(1) << std::endl;
       std::cout<< "container 1 local x: " << (m_track_array_container->get_trackarray(iTrk))->getLocalX(1) << std::endl;
 
@@ -867,7 +996,7 @@ Int_t iTrk = 0;
       std::cout<< "container 7 Subsurf: " << (m_track_array_container->get_trackarray(iTrk))->getSubSurfKey(7) << std::endl;
 
       std::cout<< "cluster 7 is valid: " << trackContainer->getValid(7) << std::endl;
-
+  */
       delete trackContainer;
       ++iTrk;
       //++iKey;
@@ -890,4 +1019,25 @@ Int_t iTrk = 0;
 
 
 
+}
+
+
+Acts::Vector3 DSTTrackArrayWriter::get_helix_surface_intersection(Surface surf, std::vector<float>& fitpars, Acts::Vector3 global)
+{
+  // we want the point where the helix intersects the plane of the surface
+
+  // get the plane of the surface
+  Acts::Vector3 sensorCenter      = surf->center(tgeometry->geometry().getGeoContext()) * 0.1;  // convert to cm
+  Acts::Vector3 sensorNormal    = -surf->normal(tgeometry->geometry().getGeoContext());
+  sensorNormal /= sensorNormal.norm();
+
+  // there are analytic solutions for a line-plane intersection.
+  // to use this, need to get the vector tangent to the helix near the measurement and a point on it.
+  std::pair<Acts::Vector3, Acts::Vector3> line = TrackFitUtils::get_helix_tangent(fitpars, global);
+  Acts::Vector3 pca = line.first;
+  Acts::Vector3 tangent = line.second;
+  float d = (sensorCenter - pca).dot(sensorNormal) / tangent.dot(sensorNormal);
+  Acts::Vector3 intersection = pca + d * tangent;
+
+  return intersection;
 }

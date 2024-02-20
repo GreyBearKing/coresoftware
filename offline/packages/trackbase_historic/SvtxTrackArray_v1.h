@@ -98,6 +98,7 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   float tpc_seed_get_slope() const  override{ return tpc_seed_m_slope; }
   float tpc_seed_get_Z0() const  override{ return tpc_seed_m_Z0; }
   short int tpc_seed_get_crossing() const  override{ return tpc_seed_m_crossing; }
+  bool get_is_tpc_helix_intersection_positive() const override { return tpc_helix_intersection_positive; }
 
   void set_does_tpc_seed_exist(const bool exist) override { does_tpc_seed_exist = exist; }
   void tpc_seed_set_crossing(const short int crossing) override { tpc_seed_m_crossing = crossing; }
@@ -106,6 +107,7 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   void tpc_seed_set_Y0(const float Y0) override { tpc_seed_m_Y0 = Y0; }
   void tpc_seed_set_slope(const float slope) override { tpc_seed_m_slope = slope; }
   void tpc_seed_set_Z0(const float Z0) override { tpc_seed_m_Z0 = Z0; }
+  void set_is_tpc_helix_intersection_positive(bool positive) const override { tpc_helix_intersection_positive = positive; }
 
   //Functions for silicon seed
 
@@ -260,6 +262,9 @@ class SvtxTrackArray_v1 : public SvtxTrackArray
   float tpc_seed_m_slope = NAN;
   float tpc_seed_m_Z0 = NAN;
   short int tpc_seed_m_crossing = std::numeric_limits<short int>::max();
+
+  //bool to say whether to use positive or negative values in circle_circle_intersection for helix fix
+  bool tpc_helix_intersection_positive = true;
 
   bool does_silicon_seed_exist = true;
   float silicon_seed_m_qOverR = NAN;

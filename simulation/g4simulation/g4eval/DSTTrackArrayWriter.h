@@ -15,6 +15,10 @@
 //#include <trackbase_historic/TrkrClusterContainer.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
+#include <g4detectors/PHG4TpcCylinderGeom.h>
+#include <g4detectors/PHG4TpcCylinderGeomContainer.h>
+#include <g4detectors/PHG4CylinderGeom.h>
+#include <intt/CylinderGeomIntt.h>
 
 #include <map>
 #include <set>
@@ -80,6 +84,8 @@ class DSTTrackArrayWriter : public SubsysReco
 
   void evaluate_track_and_cluster_residuals();
 
+  Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
+
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
 
   //! flags
@@ -92,6 +98,7 @@ class DSTTrackArrayWriter : public SubsysReco
 
   ActsGeometry* tgeometry = nullptr;
 
+  PHG4TpcCylinderGeomContainer* tpcGeom = nullptr;
 
 };
 
