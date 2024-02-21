@@ -81,6 +81,7 @@ void SvtxTrackArray_v1::CopyFrom( const SvtxTrackArray& source )
   tpc_seed_set_Y0(source.tpc_seed_get_Y0());
   tpc_seed_set_Z0(source.tpc_seed_get_Z0());
   tpc_seed_set_slope(source.tpc_seed_get_slope());
+  set_is_tpc_helix_intersection_positive(source.get_is_tpc_helix_intersection_positive());
 
     //copy clusters
   for(int i = 0; i<59; i++){

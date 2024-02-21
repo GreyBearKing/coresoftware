@@ -49,6 +49,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TLine.h>
+#include <TNtuple.h>
 //_____________________________________________________________________
 
 //_____________________________________________________________________
@@ -106,7 +107,11 @@ int DSTTrackArrayWriter::Init(PHCompositeNode* topNode )
 
 //_____________________________________________________________________
 int DSTTrackArrayWriter::InitRun(PHCompositeNode*)
-{ return Fun4AllReturnCodes::EVENT_OK; }
+{ 
+  if(m_write_ntp_residual){
+    ntp_residual = new TNtuple("ntp_residual","Residual Tuple","xresidual:yresidual:radius:globalx:globaly:globalz:localx:localy:phi:TrackSeedR");
+  }
+  return Fun4AllReturnCodes::EVENT_OK; }
 
 //_____________________________________________________________________
 int DSTTrackArrayWriter::process_event(PHCompositeNode* topNode)
@@ -142,6 +147,12 @@ int DSTTrackArrayWriter::End(PHCompositeNode*)
   // tcl->Write();
   // fcl->Write();
   // fcl->Close();
+  if(m_write_ntp_residual){
+    std::string outfile = "ResidualTuple";
+    TFile *fout = new TFile(outfile.c_str(),"recreate");
+    ntp_residual->Write();
+    fout->Close();
+  }
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -713,23 +724,8 @@ Int_t iTrk = 0;
 
       //loop over clusterKeys to match
 
-      std::vector<Acts::Vector3> clusterPositions;
-      std::vector<TrkrDefs::cluskey> clusterKeys;
-      //clusterKeys.push_back(cluster_key);
-      
-      clusterKeys.insert(clusterKeys.end(), TPCSeed->begin_cluster_keys(),
-			 TPCSeed->end_cluster_keys());
-      
-      TrackFitUtils::getTrackletClusters(tgeometry, m_cluster_map, 
-					 clusterPositions, clusterKeys);
-      std::cout << "clusterPositions.size(): " << clusterPositions.size() << std::endl;
-      std::vector<float> fitparams = TrackFitUtils::fitClusters(clusterPositions, clusterKeys);
-      std::cout << "clusterKeys[0]" << clusterKeys.at(0) << std::endl;
-      std::cout << "fitParams[0]" << fitparams.at(0) << std::endl;
-      std::cout << "fitParams[1]" << fitparams.at(1) << std::endl;
-      std::cout << "fitParams[2]" << fitparams.at(2) << std::endl;
-      std::cout << "fitParams[3]" << fitparams.at(3) << std::endl;
-      std::cout << "fitParams[4]" << fitparams.at(4) << std::endl;
+
+  
       //for(size_t i = 0; i < clusterPositions.size(); i++){
         //if(clusterKeys[i] == cluster_key){
           //Acts::Vector3 position = clusterPositions[i];
@@ -738,59 +734,97 @@ Int_t iTrk = 0;
           cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
           std::cout << "Before surface" << std::endl;
           auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
-          //HelicalFitter fitter;
-          std::cout << "Before intersection" << std::endl;
-          //Acts::Vector3 intersection = TrackFitUtils::get_helix_pca(fitparams, cglob);
-          Acts::Vector3 intersection = get_helix_surface_intersection(surface, fitparams, cglob);
-          std::cout << "global[0]: " << cglob(0) << std::endl;
-          std::cout << "global[1]: " << cglob(1) << std::endl;
-          std::cout << "global[2]: " << cglob(2) << std::endl;
-          std::cout << "After intersection" << std::endl;
-          std::cout << "Intersection[0]: " << intersection(0) << std::endl;
-          std::cout << "Intersection[1]: " << intersection(1) << std::endl;
-          std::cout << "Intersection[2]: " << intersection(2) << std::endl;
-          float pca_phi = atan2(intersection(1), intersection(0));
-          float cluster_phi = atan2(cglob(1), cglob(0));
-          float dphi = cluster_phi - pca_phi;
-          if (dphi > M_PI)
-          {
-             dphi = 2 * M_PI - dphi;
-          }
-          if (dphi < -M_PI)
-          {
-           dphi = 2 * M_PI + dphi;
-          }
-          float dz = cglob(2) - intersection(2);
-          std::cout << std::fixed;
-          std::cout << std::setprecision(6);
-          std::cout << "cluster phi: " << cluster_phi << std::endl;
-          std::cout << "dPhi: " << dphi << std::endl;
-          std::cout << "dZ: " << dz << std::endl;
-
-
-
-
+          std::cout << "cglob(0): " << cglob(0) << std::endl;
+          std::cout << "cglob(1): " << cglob(1) << std::endl;
+          std::cout << "cglob(2): " << cglob(2) << std::endl;
+   
           //calculate circle_circle_intersection between helix and tpc layer
           
-          if(layer > 7 && layer < 55){
+          if(layer < 55){
             auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
             auto radius = geoLayer->get_radius();
-            auto result = TrackFitUtils::circle_circle_intersection(radius, fitparams[0], fitparams[1], fitparams[2]);
-            std::cout << "result(0): " << std::get<0>(result) << std::endl;
-            std::cout << "result(1): " << std::get<1>(result) << std::endl;
-            std::cout << "result(2): " << std::get<2>(result) << std::endl;
-            std::cout << "result(3): " << std::get<3>(result) << std::endl;
-            std::cout << "radius: " << radius << std::endl;
-            std::cout << "z = zlope*radius + z0: " << radius * fitparams[3] + fitparams[4] << std::endl;
-            std::cout << "z = zlope*radius + z0: " << radius * fitparams[3] + fitparams[4] << std::endl;
-           // std::cout << "z = zlope*(x^2+y^2) + z0: " << radius * ((std::get<0>(result) * std::get<0>(result)) + std::get<1>(result)*std::get<1>(result))+ fitparams[4] << std::endl;
+            auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(trackContainer->tpc_seed_get_qOverR()), trackContainer->tpc_seed_get_X0(), trackContainer->tpc_seed_get_Y0());
+            
+            std::cout << "Result(0): " << std::get<0>(result) << std::endl;
+            std::cout << "Result(1): " << std::get<1>(result) << std::endl;
+            std::cout << "Result(2): " << std::get<2>(result) << std::endl;
+            std::cout << "Result(3): " << std::get<3>(result) << std::endl;
+
+            
+            float positiveCompare = sqrt(pow(std::get<0>(result)-cglob(0),2) + pow(std::get<1>(result)-cglob(1),2));
+            float negativeCompare = sqrt(pow(std::get<2>(result)-cglob(0),2) + pow(std::get<3>(result)-cglob(1),2));
+
+            std::cout << "abs(std::get<0>(result)-cglob(0)): " << abs(std::get<0>(result)-cglob(0)) << std::endl;
+            
+            std::cout << "abs(std::get<3>(result)-cglob(0)): " << abs(std::get<2>(result)-cglob(0)) << std::endl;
+
+            std::cout << "positiveCompare: " << positiveCompare << std::endl;
+            std::cout << "negativeCompare: " << negativeCompare << std::endl;
+
+            if(abs(positiveCompare) > abs(negativeCompare)){
+              //this means that the negative is closer than the positive
+              trackContainer->set_is_tpc_helix_intersection_positive(false);
+              std::cout<< "intersection set to negative" << std::endl;
+            }
+
+            Acts::Vector3 globalIntersection;
+            //check is parity is xplus and yplus or xminus and yminus
+            if(trackContainer->get_is_tpc_helix_intersection_positive()){
+              globalIntersection[0] = std::get<0>(result);
+              globalIntersection[1] = std::get<1>(result); 
+            }else{
+              globalIntersection[0] = std::get<2>(result);
+              globalIntersection[1] = std::get<3>(result); 
+            }
+            globalIntersection[2] = radius * trackContainer->tpc_seed_get_slope() + trackContainer->tpc_seed_get_Z0();
+
+            Acts::Vector3 localFromGlobalIntersectionNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * (globalIntersection * Acts::UnitConstants::cm);
+            localFromGlobalIntersectionNoTolerance /=  Acts::UnitConstants::cm;
+            std::cout << "localFromGlobalIntersectionNoTolerance(0): " << localFromGlobalIntersectionNoTolerance(0) << std::endl;
+            std::cout << "localFromGlobalIntersectionNoTolerance(1): " << localFromGlobalIntersectionNoTolerance(1) << std::endl;
+            std::cout << "localFromGlobalIntersectionNoTolerance(2): " << localFromGlobalIntersectionNoTolerance(2) << std::endl;
+            std::cout << "localFromGlobalIntersectionNoTolerance.y(): " << localFromGlobalIntersectionNoTolerance.y() << std::endl;
+
+
+            double surfaceZCenter2 = 52.89; //this is where G4 thinks the surface center is in cm
+            double drift_velocity2 = 8.0e-3;  // cm/ns
+
+            unsigned int side2 = TpcDefs::getSide(cluster_key);
+            float yintersection;
+            if(side2 == 0){
+              std::cout << "yFromIntersection: " << (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2 << std::endl;
+              yintersection = (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2;
+            }
+            else{
+              std::cout << "yFromIntersection: " << (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2 << std::endl;
+              yintersection = (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2;
+            }
+            float localXResidual;
+            float localYResidual;
+            //residual is cluster - helix fit
+            localXResidual = cluster->getLocalX() - localFromGlobalIntersectionNoTolerance(0);
+            localYResidual = cluster->getLocalY() - yintersection;
+
+            std::cout << "localXResidual: " << localXResidual << std::endl;
+            std::cout << "localYResidual: " << localYResidual << std::endl;
+
+            std::cout << "Cluster local X: " << cluster->getLocalX() << std::endl;
+            std::cout << "Cluster local Y: " << cluster->getLocalY() << std::endl;
+
+           
+          
+            if(m_write_ntp_residual){
+              float phi = atan2(cglob(1),cglob(0));
+                fillNtpResidual(localXResidual, localYResidual, (float)radius, (float)cglob(0), (float)cglob(1), (float)cglob(2), cluster->getLocalX(), cluster->getLocalY(), phi, 1.0/abs(trackContainer->tpc_seed_get_qOverR()));
+            }
+            trackContainer->setLocalX(layer, localXResidual);
+            trackContainer->setLocalY(layer, localYResidual);
           }
 
-          std::cout << "Cluster local X: " << cluster->getLocalX() << std::endl;
-          std::cout << "Cluster local Y: " << cluster->getLocalY() << std::endl;
+          
 
-
-
+          
+          
 
           //drift velocity
           double surfaceZCenter = 52.89; //this is where G4 thinks the surface center is in cm
@@ -799,38 +833,7 @@ Int_t iTrk = 0;
           double zloc = surfaceZCenter - zdriftlength; //local z relative to surface center
           unsigned int side = TpcDefs::getSide(cluster_key);
           if(side == 0) zloc = -zloc;
-          Acts::Vector3 glob;
-          Acts::Vector2 local(cluster->getLocalX(), zloc);
-          glob = surface->localToGlobal(tgeometry->geometry().getGeoContext(),
-				  local * Acts::UnitConstants::cm,
-				  Acts::Vector3(1,1,1));
-          std::cout << "Zloc: " << zloc << std::endl;
-          std::cout << "glob(0) before constants: " << glob(0) << std::endl;
-          std::cout << "glob(1) before constants: " << glob(1) << std::endl;
-          std::cout << "glob(2) before constants: " << glob(2) << std::endl;
-          glob /= Acts::UnitConstants::cm;
-          std::cout << "glob(0) after constants: " << glob(0) << std::endl;
-          std::cout << "glob(1) after constants: " << glob(1) << std::endl;
-          std::cout << "glob(2) after constants: " << glob(2) << std::endl;
-
-
-          //surface->transform(tGeometry->geometry().getGeoContext()).inverse() * global;
-          // localFromGlobalResult;
-          
-          double surfaceTolerance = 1e-4;
-          Acts::Result<Acts::Vector2> localFromGlobalResult = surface->globalToLocal(tgeometry->geometry().getGeoContext(), glob * Acts::UnitConstants::cm, Acts::Vector3(1,1,1), surfaceTolerance);
-          Acts::Vector2 localFromGlobal = *localFromGlobalResult;
-          std::cout << "localFromGlobal(0): " << localFromGlobal(0) << std::endl;
-          std::cout << "localFromGlobal(1): " << localFromGlobal(1) << std::endl;
-        
-        
-          Acts::Vector3 localFromGlobalNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * glob;
-          std::cout << "localFromGlobalNoTolerance(0): " << localFromGlobalNoTolerance(0) << std::endl;
-          std::cout << "localFromGlobalNoTolerance(1): " << localFromGlobalNoTolerance(1) << std::endl;
-          std::cout << "localFromGlobalNoTolerance(2): " << localFromGlobalNoTolerance(2) << std::endl;
-
-          std::cout << "localFromGlobalNoTolerance(1) corrected: " << surfaceZCenter + localFromGlobalNoTolerance(1)/drift_velocity << std::endl;
-          
+         
       //}
     }
  // }
@@ -1040,4 +1043,22 @@ Acts::Vector3 DSTTrackArrayWriter::get_helix_surface_intersection(Surface surf, 
   Acts::Vector3 intersection = pca + d * tangent;
 
   return intersection;
+}
+
+void DSTTrackArrayWriter::fillNtpResidual(float xresidual, float yresidual, float radius, float globalx, float globaly, float globalz, float localx, float localy, float phi, float TrackSeedR){
+
+  float residual_info[] = {
+    xresidual,
+    yresidual,
+    radius,
+    globalx,
+    globaly,
+    globalz,
+    localx,
+    localy,
+    phi,
+    TrackSeedR};
+
+    ntp_residual->Fill(residual_info);
+
 }

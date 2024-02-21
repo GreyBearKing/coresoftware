@@ -18,7 +18,7 @@
 #include <g4detectors/PHG4TpcCylinderGeom.h>
 #include <g4detectors/PHG4TpcCylinderGeomContainer.h>
 #include <g4detectors/PHG4CylinderGeom.h>
-#include <intt/CylinderGeomIntt.h>
+//#include <intt/CylinderGeomIntt.h>
 
 #include <map>
 #include <set>
@@ -43,6 +43,7 @@ class TrkrClusterHitAssoc;
 class TrkrHitSetContainer;
 class TrkrHitTruthAssoc;
 class TrackSeedContainer;
+class TNtuple;
 
 class DSTTrackArrayWriter : public SubsysReco
 {
@@ -74,6 +75,8 @@ class DSTTrackArrayWriter : public SubsysReco
   void set_flags( int flags )
   { m_flags = flags; }
 
+  void set_write_ntuple_residual(bool flag) {m_write_ntp_residual = flag;}
+
   private:
 
   //! load nodes
@@ -85,6 +88,8 @@ class DSTTrackArrayWriter : public SubsysReco
   void evaluate_track_and_cluster_residuals();
 
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
+
+  void fillNtpResidual(float /*xresidual*/, float /*yresidual*/, float /*radius*/, float /*local x*/, float /*local y*/, float /*globalz*/, float /*localx*/, float /*localy*/, float /*phi*/, float /*TrackSeedR*/);
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
 
@@ -99,6 +104,11 @@ class DSTTrackArrayWriter : public SubsysReco
   ActsGeometry* tgeometry = nullptr;
 
   PHG4TpcCylinderGeomContainer* tpcGeom = nullptr;
+
+  //make an TNTuple to put residual information for analysis in
+  TNtuple *ntp_residual{nullptr};
+
+  bool m_write_ntp_residual = true;
 
 };
 

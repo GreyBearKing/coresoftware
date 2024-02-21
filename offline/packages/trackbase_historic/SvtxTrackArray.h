@@ -123,6 +123,8 @@ class SvtxTrackArray : public PHObject
   virtual float tpc_seed_get_slope() const  { return NAN; }
   virtual float tpc_seed_get_Z0() const  { return NAN; }
   virtual short int tpc_seed_get_crossing() const  { return 0; }
+  virtual bool get_is_tpc_helix_intersection_positive() const {return true;}
+  //virtual float tpc_seed_get_R_param() const {return NAN;}
 
   virtual void set_does_tpc_seed_exist(const bool) {}
   virtual void tpc_seed_set_crossing(const short int)  {}
@@ -131,6 +133,8 @@ class SvtxTrackArray : public PHObject
   virtual void tpc_seed_set_Y0(const float)  {}
   virtual void tpc_seed_set_slope(const float)  {}
   virtual void tpc_seed_set_Z0(const float)  {}
+  virtual void set_is_tpc_helix_intersection_positive(const bool) {}
+  //virtual void tpc_seed_set_R_param(const float) {}
 
   //Functions for silicon seed
 

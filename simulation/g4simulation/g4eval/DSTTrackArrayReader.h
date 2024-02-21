@@ -16,6 +16,10 @@
 #include <trackbase_historic/TrackSeedContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
 #include <trackbase/ActsGeometry.h>
+#include <trackbase/TrackFitUtils.h>
+#include <g4detectors/PHG4TpcCylinderGeom.h>
+#include <g4detectors/PHG4TpcCylinderGeomContainer.h>
+#include <g4detectors/PHG4CylinderGeom.h>
 
 #include <map>
 #include <set>
@@ -72,6 +76,8 @@ class DSTTrackArrayReader : public SubsysReco
   
   void evaluate_track_and_clusters();
 
+  void evaluate_track_and_cluster_residuals();
+
   // SvtxTrack recover_track(DSTContainerv3::TrackStruct);
 
   //! tracks
@@ -97,6 +103,8 @@ class DSTTrackArrayReader : public SubsysReco
   int m_flags = WriteEvent | WriteClusters | WriteTracks;
   
   ActsGeometry* tgeometry = nullptr;
+
+  PHG4TpcCylinderGeomContainer* tpcGeom = nullptr;
 
   //@}
 
