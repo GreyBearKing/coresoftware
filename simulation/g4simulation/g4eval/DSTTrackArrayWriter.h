@@ -7,11 +7,14 @@
  * 
  */
 
+#include "DSTCompressor.h"
 #include <fun4all/SubsysReco.h>
 #include <trackbase/TrkrDefs.h>
 #include <trackbase_historic/SvtxTrack_v4.h>
 #include <trackbase_historic/SvtxTrackArray_v1.h>
+#include <trackbase_historic/SvtxTrackArray_v2.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v2.h>
 //#include <trackbase_historic/TrkrClusterContainer.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
@@ -44,6 +47,7 @@ class TrkrHitSetContainer;
 class TrkrHitTruthAssoc;
 class TrackSeedContainer;
 class TNtuple;
+class DSTCompressor;
 
 class DSTTrackArrayWriter : public SubsysReco
 {
@@ -87,11 +91,15 @@ class DSTTrackArrayWriter : public SubsysReco
 
   void evaluate_track_and_cluster_residuals();
 
+  void evaluate_track_and_cluster_residual_compression();
+
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
 
   void fillNtpResidual(float /*xresidual*/, float /*yresidual*/, float /*radius*/, float /*local x*/, float /*local y*/, float /*globalz*/, float /*localx*/, float /*localy*/, float /*phi*/, float /*TrackSeedR*/);
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
+
+  SvtxTrackArrayContainer_v2* m_track_array_container_v2 = nullptr;
 
   //! flags
   int m_flags = WriteEvent | WriteClusters | WriteTracks;
@@ -108,7 +116,11 @@ class DSTTrackArrayWriter : public SubsysReco
   //make an TNTuple to put residual information for analysis in
   TNtuple *ntp_residual{nullptr};
 
-  bool m_write_ntp_residual = true;
+  bool m_write_ntp_residual = false;
+
+  DSTCompressor* m_compressor{};
+
+  int nBits = 12;
 
 };
 

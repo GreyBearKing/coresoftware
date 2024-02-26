@@ -251,6 +251,62 @@ class SvtxTrackArray : public PHObject
 
   //functions to set cluster structs in the array
  
+  //functions for residual cluster struct
+
+  //functions to set cluster structs in the array
+  virtual UShort_t getPositionKeyResiduals(int, int) const  { return 0; }
+  virtual void setPositionKeyResiduals(int, int , UShort_t )  {}
+  virtual UShort_t getLocalXKeyResiduals(int) const  { return 0; }
+  virtual void setLocalXKeyResiduals(int, UShort_t )  {}
+  virtual UShort_t getLocalYKeyResiduals(int) const  { return 0; }
+  virtual void setLocalYKeyResiduals(int, UShort_t)  {}
+
+
+  virtual TrkrDefs::subsurfkey getSubSurfKeyResiduals(int) const {return 0;}
+  virtual void setSubSurfKeyResiduals(int, TrkrDefs::subsurfkey)  {}
+
+  virtual uint8_t getSideResiduals(int) const {return 0;}
+  virtual void setSideResiduals(int, uint8_t) {}
+  
+  virtual uint8_t getSectorIdResiduals(int) const {return 0;}
+  virtual void setSectorIdResiduals(int, uint8_t) {}
+
+  virtual bool getValidResiduals(int) const {return 0;}
+  virtual void setValidResiduals(int, bool) {}
+
+  //TrkrDefs::hitsetkey getHitSetKey(int struct_index) const override { return cluster_array[struct_index].m_hitsetkey; }
+  //void setHitSetKey(int struct_index, TrkrDefs::hitsetkey id) override { cluster_array[struct_index].m_hitsetkey = id; }
+
+  //cluster info
+  virtual unsigned int getAdcResiduals(int) const  { return 0;}
+
+  virtual void setAdcResiduals(int, unsigned int)  {}
+
+  virtual unsigned int getMaxAdcResiduals(int) const { return 0;  }
+
+  virtual void setMaxAdcResiduals(int, uint16_t) {}
+
+  //
+  // convenience interface
+  //
+  virtual float getRPhiErrorResiduals(int) const {return NAN;}
+  virtual float getZErrorResiduals(int) const {return NAN;}
+
+  virtual void setPhiErrorResiduals(int, float) {}
+  virtual void setZErrorResiduals(int, float){}
+
+  //
+  virtual uint8_t getPhiSizeResiduals(int) const  { return 0; }
+  virtual void setPhiSizeResiduals(int, uint8_t) {}
+
+  virtual uint8_t getZSizeResiduals(int) const  { return 0; }
+  virtual void setZSizeResiduals(int, uint8_t ) { }
+ 
+  virtual uint8_t getOverlapResiduals(int) const{ return 0; }
+  virtual void setOverlapResiduals(int, uint8_t) {}
+ 
+  virtual uint8_t getEdgeResiduals(int) const{ return 0; }
+  virtual void setEdgeResiduals(int, uint8_t) {}
 
 
 
