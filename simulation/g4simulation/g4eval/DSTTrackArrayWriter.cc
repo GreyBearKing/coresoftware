@@ -4,6 +4,8 @@
  */
 
 #include "DSTTrackArrayWriter.h"
+//#include "DSTEmulator.h"
+#include "DSTCompressor.h"
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <g4main/PHG4Hit.h>
@@ -146,12 +148,13 @@ int DSTTrackArrayWriter::process_event(PHCompositeNode* topNode)
   if( m_track_array_container) {
     m_track_array_container->Reset();
   }
-    evaluate_track_and_cluster_residuals();
+    //evaluate_track_and_cluster_residuals();
 
 
   if( m_track_array_container_v2) {
     m_track_array_container_v2->Reset();
   }
+  evaluate_track_and_cluster_residual_compression();
 
 
   std::cout << "Return codes end" << Fun4AllReturnCodes::EVENT_OK << std::endl;
@@ -755,6 +758,7 @@ Int_t iTrk = 0;
           std::cout << "Before cglob" << std::endl;
           cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
           std::cout << "Before surface" << std::endl;
+          std::cout << "cluster subsurfkey: " << cluster->getSubSurfKey() << std::endl;
           auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
           std::cout << "cglob(0): " << cglob(0) << std::endl;
           std::cout << "cglob(1): " << cglob(1) << std::endl;
@@ -765,6 +769,11 @@ Int_t iTrk = 0;
           if(layer < 55){
             auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
             auto radius = geoLayer->get_radius();
+            std::cout << "radius: " << radius << std::endl;
+            std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+            std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+            std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+
             auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(trackContainer->tpc_seed_get_qOverR()), trackContainer->tpc_seed_get_X0(), trackContainer->tpc_seed_get_Y0());
             
             std::cout << "Result(0): " << std::get<0>(result) << std::endl;
@@ -1156,6 +1165,8 @@ Int_t iTrk = 0;
     trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
     trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
     trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
     }
 
     if(!SiliconSeed){
@@ -1194,13 +1205,16 @@ Int_t iTrk = 0;
       std::cout << "TPC clusterkey: " << cluster_key <<"\n";
       std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
       uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
 
       //if layer is under 55, fill cluster_residual_array
       if(layer < 55){
       //trackContainer->setLocalX(layer, cluster->getLocalX());
       //trackContainer->setLocalY(layer, cluster->getLocalY());
       uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
       trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
       trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
       trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
       trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
@@ -1210,8 +1224,18 @@ Int_t iTrk = 0;
       trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
       trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
 
-      trackContainer->setValidResiduals(tpcIndex, true);
+      if(trackContainer->getValidResiduals(tpcIndex)){
+        std::cout << "Valid was already true" << std::endl;
+      }
 
+      trackContainer->setValidResiduals(tpcIndex, true);
+      std::cout << "Setting valid Residual" << std::endl;
+      if(trackContainer->getValidResiduals(tpcIndex)){
+        std::cout << "Valid is true" << std::endl;
+      }else{
+        std::cout << "Valid is not true" << std::endl;
+      }
+      
       trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
       trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
 
@@ -1220,10 +1244,17 @@ Int_t iTrk = 0;
           std::cout << "Before cglob" << std::endl;
           cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
           std::cout << "Before surface" << std::endl;
+          std::cout << "cluster subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+          std::cout << "cluster hitsetkey: " << TrkrDefs::getHitSetKeyFromClusKey(cluster_key) << std::endl;
           auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
         
           auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
           auto radius = geoLayer->get_radius();
+          std::cout << "radius: " << radius << std::endl;
+          std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+          std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+          std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+
           auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(trackContainer->tpc_seed_get_qOverR()), trackContainer->tpc_seed_get_X0(), trackContainer->tpc_seed_get_Y0());
             
           std::cout << "Result(0): " << std::get<0>(result) << std::endl;
@@ -1291,11 +1322,20 @@ Int_t iTrk = 0;
           std::cout << "localXResidual: " << localXResidual  << std::endl;
           std::cout << "localYResidual: " << localYResidual  << std::endl;
 
+          UShort_t xKey = m_compressor->compressPhi(localXResidual);
+          UShort_t yKey = m_compressor->compressZ(localYResidual);
+          std::cout << "xKey: " << xKey << std::endl;
+          std::cout << "yKey: " << yKey << std::endl;
 
-          //UShort_t xKey = m_compressor->compressPhi(localXResidual);
-          //UShort_t yKey = m_compressor->compressZ(localYResidual);
-          //trackContainer->setLocalXKeyResiduals(layer, xKey);
-          //trackContainer->setLocalYKeyResiduals(layer, yKey);
+          std::cout << "xResidual from fit: " << m_compressor->decompressPhi(xKey) << std::endl;
+          std::cout << "yResidual from fit: " << m_compressor->decompressZ(yKey) << std::endl;
+          std::cout << "localXResidual - fit Residual: " << localXResidual - m_compressor->decompressPhi(xKey)<< std::endl;
+          std::cout << "localYResidual - fit Residual: " << localYResidual - m_compressor->decompressZ(yKey)<< std::endl;
+
+
+
+          trackContainer->setLocalXKeyResiduals(tpcIndex, xKey);
+          trackContainer->setLocalYKeyResiduals(tpcIndex, yKey);
       }else{
         //Now do the 2 TPOT layers
         std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
@@ -1371,6 +1411,8 @@ Int_t iTrk = 0;
       trackContainer->setOverlap(layer, cluster->getOverlap());
       trackContainer->setEdge(layer, cluster->getEdge());
       //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
 
       std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
       std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;

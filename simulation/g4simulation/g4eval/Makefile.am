@@ -100,6 +100,7 @@ libg4eval_la_SOURCES = \
   CaloRawClusterEval.cc \
   CaloRawTowerEval.cc \
   CaloTruthEval.cc \
+  compressor_generator.cc \
   DSTEmulator.cc \
   DSTTrackArrayWriter.cc \
   DSTTrackArrayReader.cc \

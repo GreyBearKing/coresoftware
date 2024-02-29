@@ -57,7 +57,7 @@ class DSTCompressor
     std::vector<unsigned long> cnt;
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(mean, stddev);
-    float maxAbsError = approx(&order, &dict, &cnt, numPoints, generator,
+    float maxAbsError = compressor_generator::approx(&order, &dict, &cnt, numPoints, generator,
                                distribution, (size_t) pow(2, numBits));
     std::cout << "Compressing with " << numBits << " bits" << std::endl;
     std::cout << "Number of clusters = " << dict.size() << std::endl;
@@ -67,12 +67,12 @@ class DSTCompressor
 
   unsigned short compressPhi(float inPhi)
   {
-    return residesIn(inPhi, &phiDict);
+    return compressor_generator::residesIn(inPhi, &phiDict);
   };
 
   unsigned short compressZ(float inZ)
   {
-    return residesIn(inZ, &zDict);
+    return compressor_generator::residesIn(inZ, &zDict);
   };
 
   float decompressPhi(unsigned short key)

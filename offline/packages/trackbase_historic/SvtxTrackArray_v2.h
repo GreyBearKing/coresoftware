@@ -234,8 +234,8 @@ class SvtxTrackArray_v2 : public SvtxTrackArray
   void setLocalYKeyResiduals(int struct_index, UShort_t loc1) override { cluster_residuals_array[struct_index].m_residual[1] = loc1; }
 
 
-  TrkrDefs::subsurfkey getSubSurfKeyResiduals(int struct_index) const override { return cluster_array[struct_index].m_subsurfkey; }
-  void setSubSurfKeyResiduals(int struct_index, TrkrDefs::subsurfkey id) override { cluster_array[struct_index].m_subsurfkey = id; }
+  TrkrDefs::subsurfkey getSubSurfKeyResiduals(int struct_index) const override { return cluster_residuals_array[struct_index].m_subsurfkey; }
+  void setSubSurfKeyResiduals(int struct_index, TrkrDefs::subsurfkey id) override { cluster_residuals_array[struct_index].m_subsurfkey = id; }
 
   //TrkrDefs::hitsetkey getHitSetKey(int struct_index) const override { return cluster_array[struct_index].m_hitsetkey; }
   //void setHitSetKey(int struct_index, TrkrDefs::hitsetkey id) override { cluster_array[struct_index].m_hitsetkey = id; }
@@ -254,9 +254,9 @@ class SvtxTrackArray_v2 : public SvtxTrackArray
 
   //cluster info
   unsigned int getAdcResiduals(int struct_index) const override { 
-    uint8_t tmp = cluster_residuals_array[struct_index].m_adc;
-    return tmp ; 
-
+    //uint8_t tmp = cluster_residuals_array[struct_index].m_adc;
+    //return tmp ; 
+    return cluster_residuals_array[struct_index].m_adc;
   }
 
   void setAdcResiduals(int struct_index, unsigned int adc) override {

@@ -15,6 +15,7 @@
 #include <trackbase_historic/TrackSeed_v1.h>
 #include <trackbase_historic/TrackSeedContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v2.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
 #include <g4detectors/PHG4TpcCylinderGeom.h>
@@ -38,6 +39,7 @@ class TrkrClusterContainer;
 class TrkrClusterHitAssoc;
 class TrkrHitSetContainer;
 class TrkrHitTruthAssoc;
+class DSTCompressor;
 
 class DSTTrackArrayReader : public SubsysReco
 {
@@ -77,6 +79,7 @@ class DSTTrackArrayReader : public SubsysReco
   void evaluate_track_and_clusters();
 
   void evaluate_track_and_cluster_residuals();
+  void evaluate_track_and_cluster_residual_compression();
 
   // SvtxTrack recover_track(DSTContainerv3::TrackStruct);
 
@@ -91,8 +94,10 @@ class DSTTrackArrayReader : public SubsysReco
   TrackSeedContainer* m_silicon_seed_container = nullptr;
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
+  SvtxTrackArrayContainer_v2* m_track_array_container_v2 = nullptr;
   //DSTContainer* m_container = nullptr;
   SvtxTrackArray_v1* trackContainer = nullptr;
+  SvtxTrackArray_v2* trackContainer2 = nullptr;
 
 
   TrackSeed_v1* TPCSeed = nullptr;
@@ -106,6 +111,11 @@ class DSTTrackArrayReader : public SubsysReco
 
   PHG4TpcCylinderGeomContainer* tpcGeom = nullptr;
 
+
+
+  DSTCompressor* m_compressor{};
+
+  int nBits = 12;
   //@}
 
   // debugging helpers

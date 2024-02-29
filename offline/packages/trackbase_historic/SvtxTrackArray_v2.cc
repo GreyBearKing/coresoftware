@@ -107,7 +107,7 @@ void SvtxTrackArray_v2::CopyFrom( const SvtxTrackArray& source )
   //copy residual clusters
   for(int i = 0; i<50; i++){
     //check if source has valid cluster
-    if(source.getValid(i)){
+    if(source.getValidResiduals(i)){
         //setClusKey(i, source.getClusKey(i));
         setValidResiduals(i, source.getValidResiduals(i));
         setLocalXKeyResiduals(i, source.getLocalXKeyResiduals(i));
