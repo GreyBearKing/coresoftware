@@ -22,6 +22,7 @@ pkginclude_HEADERS = \
   ActsTransformations.h \
   cluster_with_sector_side.h \
   cluster_with_sector_side_residuals.h \
+  cluster_with_sector_side_residuals_minimum.h \
   TrackSeed.h \
   TrackSeed_v1.h \
   SvtxTrackSeed_v1.h \
@@ -47,9 +48,11 @@ pkginclude_HEADERS = \
   SvtxTrackArray.h \
   SvtxTrackArray_v1.h \
   SvtxTrackArray_v2.h \
+  SvtxTrackArray_v3.h \
   SvtxTrackArrayContainer.h \
   SvtxTrackArrayContainer_v1.h \
   SvtxTrackArrayContainer_v2.h \
+  SvtxTrackArrayContainer_v3.h \
   SvtxTrackMap.h \
   SvtxTrackMap_v1.h \
   SvtxTrackMap_v2.h \
@@ -71,6 +74,7 @@ pkginclude_HEADERS = \
 ROOTDICTS = \
   cluster_with_sector_side_Dict.cc \
   cluster_with_sector_side_residuals_Dict.cc \
+  cluster_with_sector_side_residuals_minimum_Dict.cc \
   TrackSeed_Dict.cc \
   TrackSeed_v1_Dict.cc \
   SvtxTrackSeed_v1_Dict.cc \
@@ -95,9 +99,11 @@ ROOTDICTS = \
   SvtxTrackArray_Dict.cc \
   SvtxTrackArray_v1_Dict.cc \
   SvtxTrackArray_v2_Dict.cc \
+  SvtxTrackArray_v3_Dict.cc \
   SvtxTrackArrayContainer_Dict.cc \
   SvtxTrackArrayContainer_v1_Dict.cc \
   SvtxTrackArrayContainer_v2_Dict.cc \
+  SvtxTrackArrayContainer_v3_Dict.cc \
   SvtxTrack_FastSim_Dict.cc \
   SvtxTrack_FastSim_v1_Dict.cc \
   SvtxTrack_FastSim_v2_Dict.cc \
@@ -120,6 +126,7 @@ pcmdir = $(libdir)
 nobase_dist_pcm_DATA = \
   cluster_with_sector_side_Dict_rdict.pcm \
   cluster_with_sector_side_residuals_Dict_rdict.pcm \
+  cluster_with_sector_side_residuals_minimum_Dict_rdict.pcm \
   TrackSeed_Dict_rdict.pcm \
   TrackSeed_v1_Dict_rdict.pcm \
   SvtxTrackSeed_v1_Dict_rdict.pcm \
@@ -144,9 +151,11 @@ nobase_dist_pcm_DATA = \
   SvtxTrackArray_Dict_rdict.pcm \
   SvtxTrackArray_v1_Dict_rdict.pcm \
   SvtxTrackArray_v2_Dict_rdict.pcm \
+  SvtxTrackArray_v3_Dict_rdict.pcm \
   SvtxTrackArrayContainer_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v1_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v2_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_v3_Dict_rdict.pcm \
   SvtxTrack_FastSim_Dict_rdict.pcm \
   SvtxTrack_FastSim_v1_Dict_rdict.pcm \
   SvtxTrack_FastSim_v2_Dict_rdict.pcm \
@@ -191,8 +200,10 @@ libtrackbase_historic_io_la_SOURCES = \
   SvtxTrack_v4.cc \
   SvtxTrackArray_v1.cc \
   SvtxTrackArray_v2.cc \
+  SvtxTrackArray_v3.cc \
   SvtxTrackArrayContainer_v1.cc \
   SvtxTrackArrayContainer_v2.cc \
+  SvtxTrackArrayContainer_v3.cc \
   SvtxTrack_FastSim.cc \
   SvtxTrack_FastSim_v1.cc \
   SvtxTrack_FastSim_v2.cc \

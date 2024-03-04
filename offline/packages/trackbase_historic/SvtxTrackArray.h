@@ -286,6 +286,20 @@ class SvtxTrackArray : public PHObject
 
   virtual void setMaxAdcResiduals(int, uint16_t) {}
 
+  //minimum cluster info
+  virtual uint8_t getMinimumPositionKeyResiduals(int, int) const  { return 0; }
+  virtual void setMinimumPositionKeyResiduals(int, int , uint8_t )  {}
+  virtual uint8_t getMinimumLocalXKeyResiduals(int) const  { return 0; }
+  virtual void setMinimumLocalXKeyResiduals(int, uint8_t )  {}
+  virtual uint8_t getMinimumLocalYKeyResiduals(int) const  { return 0; }
+  virtual void setMinimumLocalYKeyResiduals(int, uint8_t)  {}
+
+  virtual uint8_t getAdcInfoResiduals(int) const {return 0;}
+  virtual void setAdcInfoResiduals(int, uint8_t) {}
+  virtual uint8_t getFlagsResiduals(int) const {return 0;}
+  virtual void setFlagsResiduals(int, uint8_t) {}
+
+
   //
   // convenience interface
   //
