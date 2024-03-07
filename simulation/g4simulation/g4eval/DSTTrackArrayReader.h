@@ -80,6 +80,7 @@ class DSTTrackArrayReader : public SubsysReco
 
   void evaluate_track_and_cluster_residuals();
   void evaluate_track_and_cluster_residual_compression();
+  void copy_clusters();
 
   // SvtxTrack recover_track(DSTContainerv3::TrackStruct);
 
@@ -88,6 +89,7 @@ class DSTTrackArrayReader : public SubsysReco
 
   //! clusters
   TrkrClusterContainer* m_cluster_map = nullptr;
+  TrkrClusterContainer* m_reduced_cluster_map = nullptr;
 
   //! trackseedcontainers
   TrackSeedContainer* m_tpc_seed_container = nullptr;

@@ -43,6 +43,7 @@ class SvtxTrackMap;
 //class DSTContainerv3;
 //class DSTContainer;
 class TrkrCluster;
+class TrkrClusterv5;
 class TrkrClusterContainer;
 class TrkrClusterHitAssoc;
 class TrkrHitSetContainer;
@@ -97,6 +98,7 @@ class DSTTrackArrayWriter : public SubsysReco
 
   void evaluate_track_and_cluster_minimum_residual_compression();
   void evaluate_only_cluster_minimum_residual_compression();
+  void evaluate_limited_track_and_cluster_minimum_residual_compression();
 
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
 
@@ -115,6 +117,12 @@ class DSTTrackArrayWriter : public SubsysReco
   SvtxTrackMap* m_track_map = nullptr;
 
   TrkrClusterContainer* m_cluster_map = nullptr;
+
+  SvtxTrackMap* m_reduced_track_map = nullptr;
+
+  TrkrClusterContainer* m_reduced_cluster_map = nullptr;
+
+  TrkrClusterv5* m_cluster = nullptr;
 
   ActsGeometry* tgeometry = nullptr;
 

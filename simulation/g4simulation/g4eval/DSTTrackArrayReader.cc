@@ -174,11 +174,15 @@ int DSTTrackArrayReader::process_event(PHCompositeNode* topNode)
 
   //evaluate_track_and_cluster_residuals();
 
-  evaluate_track_and_cluster_residual_compression();
+  //evaluate_track_and_cluster_residual_compression();
+
+  copy_clusters();
 
   m_track_array_container->Reset();
 
   m_track_array_container_v2->Reset();
+
+  m_reduced_cluster_map->Reset();
  
   
   return Fun4AllReturnCodes::EVENT_OK;
@@ -220,6 +224,8 @@ int DSTTrackArrayReader::load_nodes( PHCompositeNode* topNode)
 
   tpcGeom = findNode::getClass<PHG4TpcCylinderGeomContainer>(topNode, "CYLINDERCELLGEOM_SVTX");
 
+  m_reduced_cluster_map = findNode::getClass<TrkrClusterContainer>(topNode, "ReducedClusterContainer");
+  
 
   return Fun4AllReturnCodes::EVENT_OK;
 
@@ -1377,4 +1383,19 @@ void DSTTrackArrayReader::evaluate_track_and_cluster_residual_compression(){
           m_cluster_map->identify();
 
 
+}
+
+void DSTTrackArrayReader::copy_clusters()
+{
+  //m_cluster_map
+  for (const auto& hitsetkey : m_reduced_cluster_map->getHitSetKeys())
+      {
+        auto range = m_reduced_cluster_map->getClusters(hitsetkey);
+        for (auto iter = range.first; iter != range.second; ++iter)
+        {
+          TrkrDefs::cluskey cluster_key = iter->first;
+          TrkrCluster* cluster = m_reduced_cluster_map->findCluster(cluster_key);
+          m_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+        }
+      }
 }
