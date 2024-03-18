@@ -3,6 +3,8 @@
 #ifndef FFARAWMODULES_MBDCHECK_H
 #define FFARAWMODULES_MBDCHECK_H
 
+#include "DumpPacket.h"
+
 #include <fun4all/SubsysReco.h>
 
 #include <set>
@@ -11,7 +13,7 @@
 class Fun4AllInputManager;
 class PHCompositeNode;
 
-class MbdCheck : public SubsysReco
+class MbdCheck : public SubsysReco, public DumpPacket
 {
  public:
   MbdCheck(const std::string &name = "MbdCheck");
@@ -22,9 +24,9 @@ class MbdCheck : public SubsysReco
 
   int process_event(PHCompositeNode *topNode) override;
 
-//  int ResetEvent(PHCompositeNode *topNode) override;
+  //  int ResetEvent(PHCompositeNode *topNode) override;
 
-//  void MyEvtNode(const std::string &name) {m_EvtNodeName = name;}
+  //  void MyEvtNode(const std::string &name) {m_EvtNodeName = name;}
 
  private:
   /* std::string m_EvtNodeName = "MBDRAWHIT"; */
