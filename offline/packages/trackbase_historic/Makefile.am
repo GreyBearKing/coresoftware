@@ -49,10 +49,13 @@ pkginclude_HEADERS = \
   SvtxTrackArray_v1.h \
   SvtxTrackArray_v2.h \
   SvtxTrackArray_v3.h \
+  SvtxTrackArray_v4.h \
   SvtxTrackArrayContainer.h \
   SvtxTrackArrayContainer_v1.h \
   SvtxTrackArrayContainer_v2.h \
   SvtxTrackArrayContainer_v3.h \
+  SvtxTrackArrayContainer_v4.h \
+  SvtxTrackArrayContainer_v5.h \
   SvtxTrackMap.h \
   SvtxTrackMap_v1.h \
   SvtxTrackMap_v2.h \
@@ -104,10 +107,13 @@ ROOTDICTS = \
   SvtxTrackArray_v1_Dict.cc \
   SvtxTrackArray_v2_Dict.cc \
   SvtxTrackArray_v3_Dict.cc \
+  SvtxTrackArray_v4_Dict.cc \
   SvtxTrackArrayContainer_Dict.cc \
   SvtxTrackArrayContainer_v1_Dict.cc \
   SvtxTrackArrayContainer_v2_Dict.cc \
   SvtxTrackArrayContainer_v3_Dict.cc \
+  SvtxTrackArrayContainer_v4_Dict.cc \
+  SvtxTrackArrayContainer_v5_Dict.cc \
   SvtxTrack_FastSim_Dict.cc \
   SvtxTrack_FastSim_v1_Dict.cc \
   SvtxTrack_FastSim_v2_Dict.cc \
@@ -160,10 +166,13 @@ nobase_dist_pcm_DATA = \
   SvtxTrackArray_v1_Dict_rdict.pcm \
   SvtxTrackArray_v2_Dict_rdict.pcm \
   SvtxTrackArray_v3_Dict_rdict.pcm \
+  SvtxTrackArray_v4_Dict_rdict.pcm \
   SvtxTrackArrayContainer_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v1_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v2_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v3_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_v4_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_v5_Dict_rdict.pcm \
   SvtxTrack_FastSim_Dict_rdict.pcm \
   SvtxTrack_FastSim_v1_Dict_rdict.pcm \
   SvtxTrack_FastSim_v2_Dict_rdict.pcm \
@@ -213,9 +222,12 @@ libtrackbase_historic_io_la_SOURCES = \
   SvtxTrackArray_v1.cc \
   SvtxTrackArray_v2.cc \
   SvtxTrackArray_v3.cc \
+  SvtxTrackArray_v4.cc \
   SvtxTrackArrayContainer_v1.cc \
   SvtxTrackArrayContainer_v2.cc \
   SvtxTrackArrayContainer_v3.cc \
+  SvtxTrackArrayContainer_v4.cc \
+  SvtxTrackArrayContainer_v5.cc \
   SvtxTrack_FastSim.cc \
   SvtxTrack_FastSim_v1.cc \
   SvtxTrack_FastSim_v2.cc \

@@ -106,6 +106,8 @@ class DSTTrackArrayReader : public SubsysReco
   TrackSeed_v1* SiliconSeed = nullptr;
   TrkrClusterv5* m_cluster = nullptr;
 
+  TrkrCluster* copy_cluster = nullptr;
+
   //! flags
   int m_flags = WriteEvent | WriteClusters | WriteTracks;
   

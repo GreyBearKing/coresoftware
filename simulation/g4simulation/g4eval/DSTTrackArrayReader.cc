@@ -136,7 +136,8 @@ int DSTTrackArrayReader::Init(PHCompositeNode* topNode )
 
   m_track_array_container_v2 = findNode::getClass<SvtxTrackArrayContainer_v2>(topNode, "SvtxTrackArrayContainer_v2");
   //m_container = findNode::getClass<DSTContainer>(topNode, "DSTContainer");
-
+  m_reduced_cluster_map = findNode::getClass<TrkrClusterContainer>(topNode, "ReducedClusterContainer");
+  
   // svtxtrackmap constructer is protected
   // auto svtxNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "SVTX"));
   // auto newNode = new PHIODataNode<PHObject>( new SvtxTrackMap, "SvtxTrackMap_2","PHObject");
@@ -175,12 +176,13 @@ int DSTTrackArrayReader::process_event(PHCompositeNode* topNode)
   //evaluate_track_and_cluster_residuals();
 
   //evaluate_track_and_cluster_residual_compression();
+  m_cluster_map->Reset();
 
   copy_clusters();
 
-  m_track_array_container->Reset();
+  //m_track_array_container->Reset();
 
-  m_track_array_container_v2->Reset();
+  //m_track_array_container_v2->Reset();
 
   m_reduced_cluster_map->Reset();
  
@@ -1394,8 +1396,12 @@ void DSTTrackArrayReader::copy_clusters()
         for (auto iter = range.first; iter != range.second; ++iter)
         {
           TrkrDefs::cluskey cluster_key = iter->first;
-          TrkrCluster* cluster = m_reduced_cluster_map->findCluster(cluster_key);
-          m_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+          std::cout << "cluster_key: " << cluster_key << std::endl;
+          m_cluster = new TrkrClusterv5();
+          m_cluster->CopyFrom(iter->second);
+          m_reduced_cluster_map->findCluster(cluster_key);
+          m_cluster->identify();
+          m_cluster_map->addClusterSpecifyKey(cluster_key, m_cluster);
         }
       }
 }

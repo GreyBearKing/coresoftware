@@ -14,9 +14,12 @@
 #include <trackbase_historic/SvtxTrackArray_v1.h>
 #include <trackbase_historic/SvtxTrackArray_v2.h>
 #include <trackbase_historic/SvtxTrackArray_v3.h>
+#include <trackbase_historic/SvtxTrackArray_v4.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v2.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v3.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v4.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v5.h>
 //#include <trackbase_historic/TrkrClusterContainer.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
@@ -84,6 +87,10 @@ class DSTTrackArrayWriter : public SubsysReco
 
   void set_write_ntuple_residual(bool flag) {m_write_ntp_residual = flag;}
 
+  void set_write_ntuple_reduced_cluster(bool flag) {m_write_ntp_reduced_cluster = flag;}
+
+  void set_ntuple_reduced_cluster_outfile(std::string name){ntp_reduced_cluster_name = name;}
+
   private:
 
   //! load nodes
@@ -99,16 +106,23 @@ class DSTTrackArrayWriter : public SubsysReco
   void evaluate_track_and_cluster_minimum_residual_compression();
   void evaluate_only_cluster_minimum_residual_compression();
   void evaluate_limited_track_and_cluster_minimum_residual_compression();
+  void no_silicon_evaluate_limited_track_and_cluster_minimum_residual_compression();
 
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
 
   void fillNtpResidual(float /*xresidual*/, float /*yresidual*/, float /*radius*/, float /*local x*/, float /*local y*/, float /*globalz*/, float /*localx*/, float /*localy*/, float /*phi*/, float /*TrackSeedR*/);
+
+  void fillNtpReducedCluster(float /*xKey*/, float /*yKey*/);
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
 
   SvtxTrackArrayContainer_v2* m_track_array_container_v2 = nullptr;
 
   SvtxTrackArrayContainer_v3* m_track_array_container_v3 = nullptr;
+
+  SvtxTrackArrayContainer_v4* m_track_array_container_v4 = nullptr;
+
+  SvtxTrackArrayContainer_v5* m_track_array_container_v5 = nullptr;
 
   //! flags
   int m_flags = WriteEvent | WriteClusters | WriteTracks;
@@ -131,7 +145,13 @@ class DSTTrackArrayWriter : public SubsysReco
   //make an TNTuple to put residual information for analysis in
   TNtuple *ntp_residual{nullptr};
 
+  TNtuple *ntp_reduced_cluster{nullptr};
+
   bool m_write_ntp_residual = false;
+
+  bool m_write_ntp_reduced_cluster = false;
+
+  std::string ntp_reduced_cluster_name = "ReducedClusterTuple";
 
   DSTCompressor* m_compressor{};
 
