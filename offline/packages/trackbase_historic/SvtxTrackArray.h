@@ -299,6 +299,8 @@ class SvtxTrackArray : public PHObject
   virtual uint8_t getFlagsResiduals(int) const {return 0;}
   virtual void setFlagsResiduals(int, uint8_t) {}
 
+  virtual uint8_t getAdcInfoResidualsAndFlags(int) const {return 0;}
+  virtual void setAdcInfoResidualsAndFlags(int, uint8_t) {}
 
   //
   // convenience interface

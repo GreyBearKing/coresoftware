@@ -1,33 +1,33 @@
 #include "SvtxTrackArray.h"
-#include "SvtxTrackArray_v5.h"
-#include "SvtxTrackArrayContainer_v5.h"
+#include "SvtxTrackArray_v6.h"
+#include "SvtxTrackArrayContainer_v6.h"
 #include <phool/PHObject.h>
 
 #include <climits>
 #include <map>
 
 
-    SvtxTrackArrayContainer_v5::SvtxTrackArrayContainer_v5() {
+    SvtxTrackArrayContainer_v6::SvtxTrackArrayContainer_v6() {
 
 
-    _clones = new TClonesArray("SvtxTrackArray_v5", 1000);
-    std::cout << "New SvtxTrackArrayContainer_v5 declared" << std::endl;
+    _clones = new TClonesArray("SvtxTrackArray_v6", 1000);
+    std::cout << "New SvtxTrackArrayContainer_v6 declared" << std::endl;
     _clones->Expand(1000);
     _clones->SetOwner();
-    _clones->SetName("SvtxTrackArrayContainer_v5");
+    _clones->SetName("SvtxTrackArrayContainer_v6");
 
     }
 
-    SvtxTrackArrayContainer_v5::~SvtxTrackArrayContainer_v5(){
+    SvtxTrackArrayContainer_v6::~SvtxTrackArrayContainer_v6(){
 
       _clones->Clear("C");
     }
     
-    void SvtxTrackArrayContainer_v5::identify(std::ostream& os) const{
-      os << "SvtxTrackArrayContainer_v5 of size " << size() << std::endl;
+    void SvtxTrackArrayContainer_v6::identify(std::ostream& os) const{
+      os << "SvtxTrackArrayContainer_v6 of size " << size() << std::endl;
     }
 
-    void SvtxTrackArrayContainer_v5::Reset()
+    void SvtxTrackArrayContainer_v6::Reset()
   {
   // clear content of towers in the container for the next event
 

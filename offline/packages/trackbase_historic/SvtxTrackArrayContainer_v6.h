@@ -1,9 +1,9 @@
-#ifndef SVTXTRACKARRAYCONTAINERV5_H
-#define SVTXTRACKARRAYCONTAINERV5_H
+#ifndef SVTXTRACKARRAYCONTAINERV6_H
+#define SVTXTRACKARRAYCONTAINERV6_H
 
 #include "SvtxTrackArrayContainer.h"
 #include "SvtxTrackArray.h"
-#include "SvtxTrackArray_v5.h"
+#include "SvtxTrackArray_v6.h"
 #include <phool/PHObject.h>
 
 #include <climits>
@@ -11,12 +11,12 @@
 #include <TClonesArray.h>
 #include <cstdint>
 
-class SvtxTrackArrayContainer_v5 : public SvtxTrackArrayContainer
+class SvtxTrackArrayContainer_v6 : public SvtxTrackArrayContainer
 {
     public:
  
-    SvtxTrackArrayContainer_v5();
-    ~SvtxTrackArrayContainer_v5() override;
+    SvtxTrackArrayContainer_v6();
+    ~SvtxTrackArrayContainer_v6() override;
     void identify(std::ostream& os = std::cout) const override;
 
       void Reset() override;
@@ -39,10 +39,10 @@ class SvtxTrackArrayContainer_v5 : public SvtxTrackArrayContainer
     }
 
     void add_trackarray(int pos, SvtxTrackArray* trackinfo) override{
-      new((*_clones)[pos]) SvtxTrackArray_v5;
+      new((*_clones)[pos]) SvtxTrackArray_v6;
       trackinfo->identify();
       std::cout << "Right before ConstructedAt4" << std::endl;
-      SvtxTrackArray_v5 *info = (SvtxTrackArray_v5*)_clones->ConstructedAt(pos);
+      SvtxTrackArray_v6 *info = (SvtxTrackArray_v6*)_clones->ConstructedAt(pos);
       std::cout << "Right before copyFrom4" << std::endl;
       info->CopyFrom(trackinfo);
       info->identify();
@@ -55,7 +55,7 @@ class SvtxTrackArrayContainer_v5 : public SvtxTrackArrayContainer
     TClonesArray *_clones = nullptr;
 
     private:
-    ClassDefOverride(SvtxTrackArrayContainer_v5, 1);
+    ClassDefOverride(SvtxTrackArrayContainer_v6, 1);
 };
 
 #endif
