@@ -17,12 +17,14 @@
 #include <trackbase_historic/SvtxTrackArray_v4.h>
 #include <trackbase_historic/SvtxTrackArray_v5.h>
 #include <trackbase_historic/SvtxTrackArray_v6.h>
+#include <trackbase_historic/SvtxTrackArray_v7.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v2.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v3.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v4.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v5.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v6.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v7.h>
 //#include <trackbase_historic/TrkrClusterContainer.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
@@ -112,6 +114,7 @@ class DSTTrackArrayWriter : public SubsysReco
   void no_silicon_evaluate_limited_track_and_cluster_minimum_residual_compression();
   void no_silicon_evaluate_limited_trackv5_and_cluster_minimum_residual_compression();
   void no_silicon_evaluate_limited_trackv6_and_cluster_minimum_residual_compression();
+  void no_silicon_evaluate_limited_trackv7_and_cluster_minimum_residual_compression();
 
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
 
@@ -130,6 +133,8 @@ class DSTTrackArrayWriter : public SubsysReco
   SvtxTrackArrayContainer_v5* m_track_array_container_v5 = nullptr;
     
   SvtxTrackArrayContainer_v6* m_track_array_container_v6 = nullptr;
+
+  SvtxTrackArrayContainer_v7* m_track_array_container_v7 = nullptr;
 
   //SvtxTrackArrayContainer_v5* m_track_array_container_v5 = new SvtxTrackArrayContainer_v5();
 

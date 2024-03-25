@@ -52,6 +52,7 @@ pkginclude_HEADERS = \
   SvtxTrackArray_v4.h \
   SvtxTrackArray_v5.h \
   SvtxTrackArray_v6.h \
+  SvtxTrackArray_v7.h \
   SvtxTrackArrayContainer.h \
   SvtxTrackArrayContainer_v1.h \
   SvtxTrackArrayContainer_v2.h \
@@ -59,6 +60,7 @@ pkginclude_HEADERS = \
   SvtxTrackArrayContainer_v4.h \
   SvtxTrackArrayContainer_v5.h \
   SvtxTrackArrayContainer_v6.h \
+  SvtxTrackArrayContainer_v7.h \
   SvtxTrackMap.h \
   SvtxTrackMap_v1.h \
   SvtxTrackMap_v2.h \
@@ -113,6 +115,7 @@ ROOTDICTS = \
   SvtxTrackArray_v4_Dict.cc \
   SvtxTrackArray_v5_Dict.cc \
   SvtxTrackArray_v6_Dict.cc \
+  SvtxTrackArray_v7_Dict.cc \
   SvtxTrackArrayContainer_Dict.cc \
   SvtxTrackArrayContainer_v1_Dict.cc \
   SvtxTrackArrayContainer_v2_Dict.cc \
@@ -120,6 +123,7 @@ ROOTDICTS = \
   SvtxTrackArrayContainer_v4_Dict.cc \
   SvtxTrackArrayContainer_v5_Dict.cc \
   SvtxTrackArrayContainer_v6_Dict.cc \
+  SvtxTrackArrayContainer_v7_Dict.cc \
   SvtxTrack_FastSim_Dict.cc \
   SvtxTrack_FastSim_v1_Dict.cc \
   SvtxTrack_FastSim_v2_Dict.cc \
@@ -175,6 +179,7 @@ nobase_dist_pcm_DATA = \
   SvtxTrackArray_v4_Dict_rdict.pcm \
   SvtxTrackArray_v5_Dict_rdict.pcm \
   SvtxTrackArray_v6_Dict_rdict.pcm \
+  SvtxTrackArray_v7_Dict_rdict.pcm \
   SvtxTrackArrayContainer_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v1_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v2_Dict_rdict.pcm \
@@ -182,6 +187,7 @@ nobase_dist_pcm_DATA = \
   SvtxTrackArrayContainer_v4_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v5_Dict_rdict.pcm \
   SvtxTrackArrayContainer_v6_Dict_rdict.pcm \
+  SvtxTrackArrayContainer_v7_Dict_rdict.pcm \
   SvtxTrack_FastSim_Dict_rdict.pcm \
   SvtxTrack_FastSim_v1_Dict_rdict.pcm \
   SvtxTrack_FastSim_v2_Dict_rdict.pcm \
@@ -234,12 +240,14 @@ libtrackbase_historic_io_la_SOURCES = \
   SvtxTrackArray_v4.cc \
   SvtxTrackArray_v5.cc \
   SvtxTrackArray_v6.cc \
+  SvtxTrackArray_v7.cc \
   SvtxTrackArrayContainer_v1.cc \
   SvtxTrackArrayContainer_v2.cc \
   SvtxTrackArrayContainer_v3.cc \
   SvtxTrackArrayContainer_v4.cc \
   SvtxTrackArrayContainer_v5.cc \
   SvtxTrackArrayContainer_v6.cc \
+  SvtxTrackArrayContainer_v7.cc \
   SvtxTrack_FastSim.cc \
   SvtxTrack_FastSim_v1.cc \
   SvtxTrack_FastSim_v2.cc \
