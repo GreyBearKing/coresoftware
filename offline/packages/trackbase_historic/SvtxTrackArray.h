@@ -165,6 +165,11 @@ class SvtxTrackArray : public PHObject
   virtual float getLocalY(int) const  { return NAN; }
   virtual void setLocalY(int, float)  {}
 
+  virtual short getLocalXInt(int) const  { return 0; }
+  virtual void setLocalXInt(int, short )  {}
+  virtual short getLocalYInt(int) const  { return 0; }
+  virtual void setLocalYInt(int, short)  {}
+
 
   virtual TrkrDefs::subsurfkey getSubSurfKey(int) const {return 0;}
   virtual void setSubSurfKey(int, TrkrDefs::subsurfkey)  {}

@@ -144,6 +144,15 @@ int DSTTrackArrayWriter::Init(PHCompositeNode* topNode )
   auto newArrayNode7 = new PHIODataNode<PHObject>( new SvtxTrackArrayContainer_v7, "SvtxTrackArrayContainer_v7","PHObject");
   evalNode->addNode(newArrayNode7);
 
+  auto newArrayNode8 = new PHIODataNode<PHObject>( new SvtxTrackArrayContainer_v8, "SvtxTrackArrayContainer_v8","PHObject");
+  evalNode->addNode(newArrayNode8);
+
+  auto newArrayNode9 = new PHIODataNode<PHObject>( new SvtxTrackArrayContainer_v9, "SvtxTrackArrayContainer_v9","PHObject");
+  evalNode->addNode(newArrayNode9);
+
+  auto newArrayNode10 = new PHIODataNode<PHObject>( new SvtxTrackArrayContainer_v10, "SvtxTrackArrayContainer_v10","PHObject");
+  evalNode->addNode(newArrayNode10);
+
   //make new cluster container
   auto clsNode = findNode::getClass<TrkrClusterContainer>(trkrNode, "ReducedClusterContainer");
   if (!clsNode)
@@ -183,13 +192,40 @@ int DSTTrackArrayWriter::Init(PHCompositeNode* topNode )
                                    14.2,
                                    nBits,
                                    nBits);
-
+/*
   m_compressor_minimum = new DSTCompressor(0.002859,
                                    0.1113,
                                    -2.22,
                                    14.2,
                                    nBitsMinimum,
                                    nBitsMinimum);
+*/
+  //increase the standard deviation by 1.3X
+  /*
+  m_compressor_minimum = new DSTCompressor(0.002859,
+                                   0.1447,
+                                   -2.22,
+                                   16.46,
+                                   nBitsMinimum,
+                                   nBitsMinimum);  
+  */
+
+   //increase the standard deviation by 2X
+   /*
+  m_compressor_minimum = new DSTCompressor(0.002859,
+                                   0.2226,
+                                   -2.22,
+                                   28.4,
+                                   nBitsMinimum,
+                                   nBitsMinimum);  
+                                   */ 
+//increase the standard deviation by 3X
+   m_compressor_minimum = new DSTCompressor(0.002859,
+                                   0.3339,
+                                   -2.22,
+                                   42.6,
+                                   nBitsMinimum,
+                                   nBitsMinimum);                                                                                                   
   //adc then maxAdc
   m_compressor_adc = new DSTCompressor(247.1,
                                    170.6,
@@ -211,6 +247,10 @@ int DSTTrackArrayWriter::InitRun(PHCompositeNode*)
   }
   if(m_write_ntp_reduced_cluster){
     ntp_reduced_cluster = new TNtuple("ntp_reduced_cluster","Reduced Cluster Tuple","xKey:yKey");
+  }
+
+  if(m_write_ntp_coordinate_info){
+    ntp_coordinate_info = new TNtuple("ntp_coordinate_info","Reduced Cluster Coordinate Tuple","xLocal:yLocal:xResidual:yResidual:xResolution:yResolution");
   }
   return Fun4AllReturnCodes::EVENT_OK; }
 
@@ -278,6 +318,43 @@ int DSTTrackArrayWriter::process_event(PHCompositeNode* topNode)
       m_track_array_container_v7->add_trackarray(i, dummy);
     }
     */
+    
+  }
+
+  if( m_track_array_container_v8) {
+    m_track_array_container_v8->Reset();
+    
+    /*
+    for(int i = 0; i<1000; i++){
+      SvtxTrackArray_v8* dummy= new SvtxTrackArray_v8();
+      m_track_array_container_v8->add_trackarray(i, dummy);
+    }
+    */
+    
+  }
+
+  if( m_track_array_container_v9) {
+    m_track_array_container_v9->Reset();
+    
+    /*
+    for(int i = 0; i<1000; i++){
+      SvtxTrackArray_v9* dummy= new SvtxTrackArray_v9();
+      m_track_array_container_v9->add_trackarray(i, dummy);
+    }
+    */
+    
+  }
+
+    if( m_track_array_container_v10) {
+    m_track_array_container_v10->Reset();
+    
+    /*
+    for(int i = 0; i<1000; i++){
+      SvtxTrackArray_v10* dummy= new SvtxTrackArray_v10();
+      m_track_array_container_v10->add_trackarray(i, dummy);
+    }
+    */
+    
   }
 
     //m_track_array_container_v5 = new SvtxTrackArrayContainer_v5();
@@ -298,7 +375,12 @@ int DSTTrackArrayWriter::process_event(PHCompositeNode* topNode)
   //no_silicon_evaluate_limited_trackv5_and_cluster_minimum_residual_compression();
 
   //no_silicon_evaluate_limited_trackv6_and_cluster_minimum_residual_compression();
-  no_silicon_evaluate_limited_trackv7_and_cluster_minimum_residual_compression();
+  //no_silicon_evaluate_limited_trackv7_and_cluster_minimum_residual_compression();
+  //no_silicon_evaluate_limited_trackv8_and_cluster_minimum_residual_compression();
+  //no_silicon_evaluate_limited_trackv9_and_cluster_minimum_residual_compression();
+  //no_silicon_evaluate_limited_trackv9_and_cluster_minimum_no_residual_compression();
+  //no_silicon_evaluate_limited_trackv10_and_cluster_minimum_compression();
+  no_silicon_evaluate_limited_trackv10_and_cluster_minimum_residual_compression();
 
   std::cout << "Return codes end" << Fun4AllReturnCodes::EVENT_OK << std::endl;
   return Fun4AllReturnCodes::EVENT_OK;
@@ -325,6 +407,14 @@ int DSTTrackArrayWriter::End(PHCompositeNode*)
     //outfile += std::to_string(seed);
     TFile *fout = new TFile(ntp_reduced_cluster_name.c_str(),"recreate");
     ntp_reduced_cluster->Write();
+    fout->Close();
+  }
+
+   if(m_write_ntp_coordinate_info){
+    //std::string outfile = "ReducedClusterTuple";
+    //outfile += std::to_string(seed);
+    TFile *fout = new TFile(ntp_coordinate_info_name.c_str(),"recreate");
+    ntp_coordinate_info->Write();
     fout->Close();
   }
 
@@ -362,6 +452,12 @@ int DSTTrackArrayWriter::load_nodes( PHCompositeNode* topNode )
   m_track_array_container_v6 = findNode::getClass<SvtxTrackArrayContainer_v6>(topNode, "SvtxTrackArrayContainer_v6");
 
   m_track_array_container_v7 = findNode::getClass<SvtxTrackArrayContainer_v7>(topNode, "SvtxTrackArrayContainer_v7");
+
+  m_track_array_container_v8 = findNode::getClass<SvtxTrackArrayContainer_v8>(topNode, "SvtxTrackArrayContainer_v8");
+
+  m_track_array_container_v9 = findNode::getClass<SvtxTrackArrayContainer_v9>(topNode, "SvtxTrackArrayContainer_v9");
+
+  m_track_array_container_v10 = findNode::getClass<SvtxTrackArrayContainer_v10>(topNode, "SvtxTrackArrayContainer_v10");
 
 
   //look for reduced cluster
@@ -1250,6 +1346,20 @@ void DSTTrackArrayWriter::fillNtpReducedCluster(float xKey, float yKey){
     yKey};
 
     ntp_reduced_cluster->Fill(reduced_cluster_info);
+
+}
+
+void DSTTrackArrayWriter::fillNtpCoordinateInfo(float xLocal, float yLocal, float xResidual, float yResidual, float xResolution, float yResolution){
+
+  float reduced_cluster_info[] = {
+    xLocal,
+    yLocal,
+    xResidual,
+    yResidual,
+    xResolution,
+    yResolution};
+
+    ntp_coordinate_info->Fill(reduced_cluster_info);
 
 }
 
@@ -4618,11 +4728,11 @@ Int_t iTrk = 0;
           auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
           auto radius = geoLayer->get_radius();
           std::cout << "radius: " << radius << std::endl;
-          std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
-          std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
-          std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+          //std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+          //std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+          //std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
 
-          auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(trackContainer->tpc_seed_get_qOverR()), trackContainer->tpc_seed_get_X0(), trackContainer->tpc_seed_get_Y0());
+          auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(TPCSeed->get_qOverR()), TPCSeed->get_X0(), TPCSeed->get_Y0());
             
           std::cout << "Result(0): " << std::get<0>(result) << std::endl;
           std::cout << "Result(1): " << std::get<1>(result) << std::endl;
@@ -4639,23 +4749,19 @@ Int_t iTrk = 0;
 
           std::cout << "positiveCompare: " << positiveCompare << std::endl;
           std::cout << "negativeCompare: " << negativeCompare << std::endl;
-
-          if(abs(positiveCompare) > abs(negativeCompare)){
-            //this means that the negative is closer than the positive
-            trackContainer->set_is_tpc_helix_intersection_positive(false);
-            std::cout<< "intersection set to negative" << std::endl;
-          }
-
+          
           Acts::Vector3 globalIntersection;
-            //check is parity is xplus and yplus or xminus and yminus
-          if(trackContainer->get_is_tpc_helix_intersection_positive()){
+          
+          if(abs(positiveCompare) < abs(negativeCompare)){
+            //this means that the postive is closer than the negative
             globalIntersection[0] = std::get<0>(result);
             globalIntersection[1] = std::get<1>(result); 
           }else{
             globalIntersection[0] = std::get<2>(result);
             globalIntersection[1] = std::get<3>(result); 
           }
-          globalIntersection[2] = radius * trackContainer->tpc_seed_get_slope() + trackContainer->tpc_seed_get_Z0();
+
+          globalIntersection[2] = radius * TPCSeed->get_slope() + TPCSeed->get_Z0();
 
           Acts::Vector3 localFromGlobalIntersectionNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * (globalIntersection * Acts::UnitConstants::cm);
           localFromGlobalIntersectionNoTolerance /=  Acts::UnitConstants::cm;
@@ -4703,6 +4809,9 @@ Int_t iTrk = 0;
 
           trackContainer->setMinimumLocalXKeyResiduals(tpcIndex, xKey);
           trackContainer->setMinimumLocalYKeyResiduals(tpcIndex, yKey);
+
+          std::cout << "xKey[" << tpcIndex << "]: " << unsigned(xKey) << std::endl;
+          std::cout << "yKey[" << tpcIndex << "]: " << unsigned(yKey) << std::endl;
       }
       
       /*
@@ -4832,6 +4941,2180 @@ Int_t iTrk = 0;
       track_struct.clusters.push_back( cluster_struct );
       */
       m_track_array_container_v7->add_trackarray(iTrk, trackContainer);
+      //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
+      //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
+      ++iTrk;
+  }
+
+      delete trackContainer;
+
+      //++iKey;
+      std::cout << "end of loop" << "\n";
+    }
+    
+
+     //m_track_map->clear();
+     m_track_map->Reset();
+     m_cluster_map->Reset();
+     
+     //m_cluster_map->Clear();
+
+
+    //cluster->getSubSurfKey();
+    //get a cluskey from a subsurfkey
+    //TPCSeed->find_cluster_key(cluskey);
+
+    
+
+
+
+}
+
+
+//make a v8 version that doesn't have adc info
+
+
+//_____________________________________________________________________
+void DSTTrackArrayWriter::no_silicon_evaluate_limited_trackv8_and_cluster_minimum_residual_compression(){
+//use this to create object that looks through both tracks and clusters and saves into new object
+//make sure clusters exist
+//std::cout << "start of check" << "\n";
+//if(!(m_cluster_map&&m_hitsetcontainer&&m_container)) return;
+//make sure tracks exist
+if( !( m_track_map && m_cluster_map && m_track_array_container_v8&&m_reduced_cluster_map && m_reduced_track_map ) ) {
+    return;
+}
+//std::cout << "after check" << "\n";
+//m_track_array_container->Reset();
+
+
+
+//TClonesArray& TrkContainer = *m_container->arrTrkContainer;
+//TrkContainer.Clear();
+
+
+Int_t iTrk = 0;
+  //long unsigned int iKey = 0;
+
+  //std::cout << "Before loop" << "\n";
+  for( const auto& trackpair:*m_track_map )
+  {
+    std::cout << "start of loop" << "\n";
+    //new(trkrDST[iCluster]) TrkrClusterv4();
+    // TrkrClusterv4* clsArr = (TrkrClusterv4*) trkrDST.ConstructedAt(iCluster);
+    
+
+    //unsigned int key = trackpair.first;
+    const auto track = trackpair.second;
+
+    
+
+    //auto track_struct = create_track( track );
+    /*
+    // truth information
+    const auto [id,contributors] = get_max_contributor( track );
+    track_struct.contributors = contributors;
+    
+    // get particle
+    auto particle = m_g4truthinfo->GetParticle(id);
+    track_struct.embed = get_embed(particle);
+    add_truth_information(track_struct, particle);
+    */
+    
+
+    //Store information from Track into new container that will also hold cluster information
+    //new(TrkContainer[iTrk]) SvtxTrackArray_v1;
+    //SvtxTrackArray_v1* trackContainer = (SvtxTrackArray_v1*) TrkContainer.ConstructedAt(iTrk);
+
+    SvtxTrackArray_v8* trackContainer = new SvtxTrackArray_v8();
+
+    /*
+    if(m_container->getArrayKeysSize()<(iKey+1)){
+        m_container->resizeArrayKeys(iKey+1);
+    }
+    m_container->setArrayKeys(iKey,key);
+    */
+
+    //Save all information from a Track into the new container
+    /*
+    std::cout << "track get id:" << track->get_id() <<"\n"; 
+    trackContainer->set_id(track->get_id());
+    trackContainer->set_vertex_id(track->get_vertex_id());
+    trackContainer->set_positive_charge(track->get_positive_charge());
+    trackContainer->set_chisq(track->get_chisq());
+    trackContainer->set_ndf(track->get_ndf());
+    trackContainer->set_crossing(track->get_crossing());
+
+    trackContainer->set_x(track->get_x());
+    trackContainer->set_y(track->get_y());
+    trackContainer->set_z(track->get_z());
+    trackContainer->set_px(track->get_px());
+    trackContainer->set_py(track->get_py());
+    trackContainer->set_pz(track->get_pz());
+    */
+  
+
+    TrackSeed* TPCSeed = track->get_tpc_seed();
+    //TrackSeed* SiliconSeed = track->get_silicon_seed();
+
+    //check number of clusters in TPC
+    if(TPCSeed->size_cluster_keys() > 20){
+      m_reduced_track_map->insert(track);
+    
+
+    if(!TPCSeed){
+      std::cout << "TPCSeed does not exist \n";
+      //trackContainer->set_does_tpc_seed_exist(false);
+    }else{
+    //store information from tpc seed
+    //trackContainer->set_does_tpc_seed_exist(true);
+    //std::cout << "tpcseed:" << TPCSeed->get_qOverR() <<"\n"; 
+    //trackContainer->tpc_seed_set_qOverR(TPCSeed->get_qOverR());
+    //trackContainer->tpc_seed_set_X0(TPCSeed->get_X0());
+    //trackContainer->tpc_seed_set_Y0(TPCSeed->get_Y0());
+    //trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
+    //trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
+    //trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    //std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
+    //std::cout << "TPC qOverR: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC X0: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC Y0: " << TPCSeed->get_Y0() << std::endl;
+    //std::cout << "TPC crossing: " << TPCSeed->get_crossing() << std::endl;
+    }
+    /*
+    if(!SiliconSeed){
+      std::cout << "SiliconSeed does not exist \n";
+      trackContainer->set_does_silicon_seed_exist(false);
+    }else{
+    trackContainer->set_does_silicon_seed_exist(true);
+    //store information from silicon seed
+    std::cout << "silconseed:" << SiliconSeed->get_qOverR() <<"\n"; 
+    trackContainer->silicon_seed_set_qOverR(SiliconSeed->get_qOverR());
+    trackContainer->silicon_seed_set_X0(SiliconSeed->get_X0());
+    trackContainer->silicon_seed_set_Y0(SiliconSeed->get_Y0());
+    trackContainer->silicon_seed_set_slope(SiliconSeed->get_slope());
+    trackContainer->silicon_seed_set_Z0(SiliconSeed->get_Z0());
+    trackContainer->silicon_seed_set_crossing(SiliconSeed->get_crossing());
+    std::cout << "Silicon qOverR: " << SiliconSeed->get_qOverR() << std::endl;
+    std::cout << "Silicon X0 " << SiliconSeed->get_X0() << std::endl;
+    std::cout << "Silicon Y0: " << SiliconSeed->get_Y0() << std::endl;
+    std::cout << "Silicon crossing: " << SiliconSeed->get_crossing() << std::endl;
+    }
+    */
+    //trackContainer->copy_states(track);
+    //store clusterkeyset from each seed
+
+  
+
+  if(TPCSeed){
+    std::cout << "We are about to loop over cluster keys in TPC Seed" << std::endl;
+  TPCSeed->identify();
+    for( auto key_iter = TPCSeed->begin_cluster_keys(); key_iter != TPCSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){
+            
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+
+      }
+      //store information in track array
+      std::cout << "TPC clusterkey: " << cluster_key <<"\n";
+      std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
+
+      //if layer is under 55, fill cluster_residual_array
+      if(layer < 55){
+      //trackContainer->setLocalX(layer, cluster->getLocalX());
+      //trackContainer->setLocalY(layer, cluster->getLocalY());
+      uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
+      //trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      //std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
+      //trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
+      //trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
+      //trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
+      //trackContainer->setMaxAdcResiduals(tpcIndex, cluster->getMaxAdc());
+      //trackContainer->setPhiSizeResiduals(tpcIndex, cluster->getPhiSize());
+      //trackContainer->setZSizeResiduals(tpcIndex, cluster->getZSize());
+      //trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
+      //trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
+      //trackContainer->setValidResiduals(tpcIndex, true);
+      //trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
+      //trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
+
+
+/*
+      uint8_t flag = 0;
+
+
+      if(cluster->getZSize() > 3){
+        flag = flag + (1 >> 0);
+      }
+
+      if(cluster->getPhiSize() > 3){
+        flag = flag + (1 >> 1);
+      }
+
+      if(cluster->getEdge() > 2){
+        flag = flag + (1 >> 2);
+      }
+      if(cluster->getOverlap() > 3){
+        flag = flag + (1 >> 3);
+      }
+      std::cout << "flag: " << unsigned(flag) << std::endl;
+      //trackContainer->setFlagsResiduals(tpcIndex, flag);
+
+      //compress adc
+      uint8_t adcKey = uint8_t(m_compressor_adc->compressPhi(cluster->getAdc()));
+      //uint8_t maxAdcKey = uint8_t(m_compressor_adc->compressZ(cluster->getMaxAdc()));
+
+      uint8_t totalAdcKeyAndFlags = (flag << 4) + adcKey;   
+      std::cout << "totalAdcKeyAndFlags: " << unsigned(totalAdcKeyAndFlags) << std::endl;
+      trackContainer->setAdcInfoResidualsAndFlags(tpcIndex, totalAdcKeyAndFlags);
+
+*/
+      //now we have set everything except postition
+          Acts::Vector3 cglob;
+          std::cout << "Before cglob" << std::endl;
+          cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
+          std::cout << "Before surface" << std::endl;
+          std::cout << "cluster subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+          std::cout << "cluster hitsetkey: " << TrkrDefs::getHitSetKeyFromClusKey(cluster_key) << std::endl;
+          auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
+        
+          auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
+          auto radius = geoLayer->get_radius();
+          std::cout << "radius: " << radius << std::endl;
+          //std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+          //std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+          //std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+
+          auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(TPCSeed->get_qOverR()), TPCSeed->get_X0(), TPCSeed->get_Y0());
+            
+          std::cout << "Result(0): " << std::get<0>(result) << std::endl;
+          std::cout << "Result(1): " << std::get<1>(result) << std::endl;
+          std::cout << "Result(2): " << std::get<2>(result) << std::endl;
+          std::cout << "Result(3): " << std::get<3>(result) << std::endl;
+
+            
+          float positiveCompare = sqrt(pow(std::get<0>(result)-cglob(0),2) + pow(std::get<1>(result)-cglob(1),2));
+          float negativeCompare = sqrt(pow(std::get<2>(result)-cglob(0),2) + pow(std::get<3>(result)-cglob(1),2));
+
+          std::cout << "abs(std::get<0>(result)-cglob(0)): " << abs(std::get<0>(result)-cglob(0)) << std::endl;
+            
+          std::cout << "abs(std::get<3>(result)-cglob(0)): " << abs(std::get<2>(result)-cglob(0)) << std::endl;
+
+          std::cout << "positiveCompare: " << positiveCompare << std::endl;
+          std::cout << "negativeCompare: " << negativeCompare << std::endl;
+          
+          Acts::Vector3 globalIntersection;
+          
+          if(abs(positiveCompare) < abs(negativeCompare)){
+            //this means that the postive is closer than the negative
+            globalIntersection[0] = std::get<0>(result);
+            globalIntersection[1] = std::get<1>(result); 
+          }else{
+            globalIntersection[0] = std::get<2>(result);
+            globalIntersection[1] = std::get<3>(result); 
+          }
+
+          globalIntersection[2] = radius * TPCSeed->get_slope() + TPCSeed->get_Z0();
+
+          Acts::Vector3 localFromGlobalIntersectionNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * (globalIntersection * Acts::UnitConstants::cm);
+          localFromGlobalIntersectionNoTolerance /=  Acts::UnitConstants::cm;
+          std::cout << "localFromGlobalIntersectionNoTolerance(0): " << localFromGlobalIntersectionNoTolerance(0) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(1): " << localFromGlobalIntersectionNoTolerance(1) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(2): " << localFromGlobalIntersectionNoTolerance(2) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance.y(): " << localFromGlobalIntersectionNoTolerance.y() << std::endl;
+
+
+          double surfaceZCenter2 = 52.89; //this is where G4 thinks the surface center is in cm
+          double drift_velocity2 = 8.0e-3;  // cm/ns
+
+          unsigned int side2 = TpcDefs::getSide(cluster_key);
+          float yintersection;
+          if(side2 == 0){
+            std::cout << "yFromIntersection: " << (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2 << std::endl;
+            yintersection = (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2;
+          }
+          else{
+            std::cout << "yFromIntersection: " << (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2 << std::endl;
+            yintersection = (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2;
+          }
+          float localXResidual;
+          float localYResidual;
+          //residual is cluster - helix fit
+          localXResidual = cluster->getLocalX() - localFromGlobalIntersectionNoTolerance(0);
+          localYResidual = cluster->getLocalY() - yintersection;
+          //now that we have residuals, run them through a compressor to get the keys
+          //we want to save
+          
+          std::cout << "localXResidual: " << localXResidual  << std::endl;
+          std::cout << "localYResidual: " << localYResidual  << std::endl;
+
+          uint8_t xKey = uint8_t(m_compressor_minimum->compressPhi(localXResidual));
+          uint8_t yKey = uint8_t(m_compressor_minimum->compressZ(localYResidual));
+          std::cout << "xKey: " << unsigned(xKey) << std::endl;
+          std::cout << "yKey: " << unsigned(yKey) << std::endl;
+
+          std::cout << "xResidual from fit: " << m_compressor_minimum->decompressPhi(xKey) << std::endl;
+          std::cout << "yResidual from fit: " << m_compressor_minimum->decompressZ(yKey) << std::endl;
+          std::cout << "localXResidual - fit Residual: " << localXResidual - m_compressor_minimum->decompressPhi(xKey)<< std::endl;
+          std::cout << "localYResidual - fit Residual: " << localYResidual - m_compressor_minimum->decompressZ(yKey)<< std::endl;
+
+
+
+          trackContainer->setMinimumLocalXKeyResiduals(tpcIndex, xKey);
+          trackContainer->setMinimumLocalYKeyResiduals(tpcIndex, yKey);
+          
+          if(m_write_ntp_coordinate_info){
+            cluster->getLocalX();
+            float xResolution = localXResidual - m_compressor_minimum->decompressPhi(xKey);
+            float yResolution = localYResidual - m_compressor_minimum->decompressZ(yKey);
+            fillNtpCoordinateInfo(cluster->getLocalX(), cluster->getLocalY(), localXResidual, localYResidual, xResolution, yResolution);
+          }
+
+          std::cout << "xKey[" << tpcIndex << "]: " << unsigned(xKey) << std::endl;
+          std::cout << "yKey[" << tpcIndex << "]: " << unsigned(yKey) << std::endl;
+      }
+      
+      /*
+      else{
+        //Now do the 2 TPOT layers
+        std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+        //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+        uint8_t TPOTindex = layer - 48;
+        trackContainer->setLocalX(TPOTindex, cluster->getLocalX());
+        trackContainer->setLocalY(TPOTindex, cluster->getLocalY());
+        trackContainer->setSubSurfKey(TPOTindex, cluster->getSubSurfKey());
+        trackContainer->setPhiError(TPOTindex, cluster->getRPhiError());
+        trackContainer->setZError(TPOTindex, cluster->getZError());
+        trackContainer->setAdc(TPOTindex, cluster->getAdc());
+        trackContainer->setMaxAdc(TPOTindex, cluster->getMaxAdc());
+        trackContainer->setPhiSize(TPOTindex, cluster->getPhiSize());
+        trackContainer->setZSize(TPOTindex, cluster->getZSize());
+        trackContainer->setOverlap(TPOTindex, cluster->getOverlap());
+        trackContainer->setEdge(TPOTindex, cluster->getEdge());
+
+        std::cout << "TPC Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+        std::cout << "TPC Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+        trackContainer->setValid(TPOTindex, true);
+
+        if(trackContainer->getValid(TPOTindex)){
+          std::cout << "Valid is true" << std::endl;
+        }
+
+        trackContainer->setSide(TPOTindex, TrkrDefs::getZElement(cluster_key));
+        trackContainer->setSectorId(TPOTindex, TrkrDefs::getPhiElement(cluster_key));
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      //TrkrDefs::
+
+      //loop over clusterKeys to match
+      }
+
+      */
+      //}
+    }
+ // }
+  }
+
+  /*
+  if(trackContainer->get_does_silicon_seed_exist()){
+    std::cout << "We are about to loop over cluster keys in Silicon Seed" << std::endl;
+  SiliconSeed->identify();
+    for( auto key_iter = SiliconSeed->begin_cluster_keys(); key_iter != SiliconSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){   
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+        //m_reduced_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+      }
+      //store cluster key
+      //silicon_cluster_keys->insert_cluster_key(cluster_key);
+
+      //store information in track array
+      std::cout << "Silicon clusterkey: " << cluster_key <<"\n";
+
+      std::cout << "Silicon subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+
+      std::cout << "Silicon layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+      //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+      trackContainer->setLocalX(layer, cluster->getPosition(0));
+      trackContainer->setLocalY(layer, cluster->getPosition(1));
+      trackContainer->setSubSurfKey(layer, cluster->getSubSurfKey());
+      trackContainer->setPhiError(layer, cluster->getRPhiError());
+      trackContainer->setZError(layer, cluster->getZError());
+      trackContainer->setAdc(layer, cluster->getAdc());
+      trackContainer->setMaxAdc(layer, cluster->getMaxAdc());
+      trackContainer->setPhiSize(layer, cluster->getPhiSize());
+      trackContainer->setZSize(layer, cluster->getZSize());
+      trackContainer->setOverlap(layer, cluster->getOverlap());
+      trackContainer->setEdge(layer, cluster->getEdge());
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
+
+      std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+      std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+      trackContainer->setSide(layer, TrkrDefs::getZElement(cluster_key));
+      trackContainer->setSectorId(layer, TrkrDefs::getPhiElement(cluster_key));
+
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      
+    }
+  }
+  */
+   
+    
+
+      /*
+      // find track state that is the closest to cluster
+      // this assumes that both clusters and states are sorted along r
+      const auto radius( cluster_struct.r );
+      float dr_min = -1;
+      for( auto iter = state_iter; iter != track->end_states(); ++iter )
+      {
+        const auto dr = std::abs( radius - get_r( iter->second->get_x(), iter->second->get_y() ) );
+        if( dr_min < 0 || dr < dr_min )
+        {
+          state_iter = iter;
+          dr_min = dr;
+        } else break;
+      }
+
+      // store track state in cluster struct
+      add_trk_information( cluster_struct, state_iter->second );
+
+      // add to track
+      track_struct.clusters.push_back( cluster_struct );
+      */
+      m_track_array_container_v8->add_trackarray(iTrk, trackContainer);
+      //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
+      //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
+      ++iTrk;
+  }
+
+      delete trackContainer;
+
+      //++iKey;
+      std::cout << "end of loop" << "\n";
+    }
+    
+
+     //m_track_map->clear();
+     m_track_map->Reset();
+     m_cluster_map->Reset();
+     
+     //m_cluster_map->Clear();
+
+
+    //cluster->getSubSurfKey();
+    //get a cluskey from a subsurfkey
+    //TPCSeed->find_cluster_key(cluskey);
+
+    
+
+
+
+}
+
+
+//make v9 no residual version
+
+//_____________________________________________________________________
+void DSTTrackArrayWriter::no_silicon_evaluate_limited_trackv9_and_cluster_minimum_residual_compression(){
+//use this to create object that looks through both tracks and clusters and saves into new object
+//make sure clusters exist
+//std::cout << "start of check" << "\n";
+//if(!(m_cluster_map&&m_hitsetcontainer&&m_container)) return;
+//make sure tracks exist
+if( !( m_track_map && m_cluster_map && m_track_array_container_v9&&m_reduced_cluster_map && m_reduced_track_map ) ) {
+    return;
+}
+//std::cout << "after check" << "\n";
+//m_track_array_container->Reset();
+
+
+
+//TClonesArray& TrkContainer = *m_container->arrTrkContainer;
+//TrkContainer.Clear();
+
+
+Int_t iTrk = 0;
+  //long unsigned int iKey = 0;
+
+  //std::cout << "Before loop" << "\n";
+  for( const auto& trackpair:*m_track_map )
+  {
+    std::cout << "start of loop" << "\n";
+    //new(trkrDST[iCluster]) TrkrClusterv4();
+    // TrkrClusterv4* clsArr = (TrkrClusterv4*) trkrDST.ConstructedAt(iCluster);
+    
+
+    //unsigned int key = trackpair.first;
+    const auto track = trackpair.second;
+
+    
+
+    //auto track_struct = create_track( track );
+    /*
+    // truth information
+    const auto [id,contributors] = get_max_contributor( track );
+    track_struct.contributors = contributors;
+    
+    // get particle
+    auto particle = m_g4truthinfo->GetParticle(id);
+    track_struct.embed = get_embed(particle);
+    add_truth_information(track_struct, particle);
+    */
+    
+
+    //Store information from Track into new container that will also hold cluster information
+    //new(TrkContainer[iTrk]) SvtxTrackArray_v1;
+    //SvtxTrackArray_v1* trackContainer = (SvtxTrackArray_v1*) TrkContainer.ConstructedAt(iTrk);
+
+    SvtxTrackArray_v9* trackContainer = new SvtxTrackArray_v9();
+
+    /*
+    if(m_container->getArrayKeysSize()<(iKey+1)){
+        m_container->resizeArrayKeys(iKey+1);
+    }
+    m_container->setArrayKeys(iKey,key);
+    */
+
+    //Save all information from a Track into the new container
+    /*
+    std::cout << "track get id:" << track->get_id() <<"\n"; 
+    trackContainer->set_id(track->get_id());
+    trackContainer->set_vertex_id(track->get_vertex_id());
+    trackContainer->set_positive_charge(track->get_positive_charge());
+    trackContainer->set_chisq(track->get_chisq());
+    trackContainer->set_ndf(track->get_ndf());
+    trackContainer->set_crossing(track->get_crossing());
+
+    trackContainer->set_x(track->get_x());
+    trackContainer->set_y(track->get_y());
+    trackContainer->set_z(track->get_z());
+    trackContainer->set_px(track->get_px());
+    trackContainer->set_py(track->get_py());
+    trackContainer->set_pz(track->get_pz());
+    */
+  
+
+    TrackSeed* TPCSeed = track->get_tpc_seed();
+    //TrackSeed* SiliconSeed = track->get_silicon_seed();
+
+    //check number of clusters in TPC
+    if(TPCSeed->size_cluster_keys() > 20){
+      m_reduced_track_map->insert(track);
+    
+
+    if(!TPCSeed){
+      std::cout << "TPCSeed does not exist \n";
+      //trackContainer->set_does_tpc_seed_exist(false);
+    }else{
+    //store information from tpc seed
+    //trackContainer->set_does_tpc_seed_exist(true);
+    //std::cout << "tpcseed:" << TPCSeed->get_qOverR() <<"\n"; 
+    //trackContainer->tpc_seed_set_qOverR(TPCSeed->get_qOverR());
+    //trackContainer->tpc_seed_set_X0(TPCSeed->get_X0());
+    //trackContainer->tpc_seed_set_Y0(TPCSeed->get_Y0());
+    //trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
+    //trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
+    //trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    //std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
+    //std::cout << "TPC qOverR: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC X0: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC Y0: " << TPCSeed->get_Y0() << std::endl;
+    //std::cout << "TPC crossing: " << TPCSeed->get_crossing() << std::endl;
+    }
+    /*
+    if(!SiliconSeed){
+      std::cout << "SiliconSeed does not exist \n";
+      trackContainer->set_does_silicon_seed_exist(false);
+    }else{
+    trackContainer->set_does_silicon_seed_exist(true);
+    //store information from silicon seed
+    std::cout << "silconseed:" << SiliconSeed->get_qOverR() <<"\n"; 
+    trackContainer->silicon_seed_set_qOverR(SiliconSeed->get_qOverR());
+    trackContainer->silicon_seed_set_X0(SiliconSeed->get_X0());
+    trackContainer->silicon_seed_set_Y0(SiliconSeed->get_Y0());
+    trackContainer->silicon_seed_set_slope(SiliconSeed->get_slope());
+    trackContainer->silicon_seed_set_Z0(SiliconSeed->get_Z0());
+    trackContainer->silicon_seed_set_crossing(SiliconSeed->get_crossing());
+    std::cout << "Silicon qOverR: " << SiliconSeed->get_qOverR() << std::endl;
+    std::cout << "Silicon X0 " << SiliconSeed->get_X0() << std::endl;
+    std::cout << "Silicon Y0: " << SiliconSeed->get_Y0() << std::endl;
+    std::cout << "Silicon crossing: " << SiliconSeed->get_crossing() << std::endl;
+    }
+    */
+    //trackContainer->copy_states(track);
+    //store clusterkeyset from each seed
+
+  
+
+  if(TPCSeed){
+    std::cout << "We are about to loop over cluster keys in TPC Seed" << std::endl;
+  TPCSeed->identify();
+    for( auto key_iter = TPCSeed->begin_cluster_keys(); key_iter != TPCSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){
+            
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+
+      }
+      //store information in track array
+      std::cout << "TPC clusterkey: " << cluster_key <<"\n";
+      std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
+
+      //if layer is under 55, fill cluster_residual_array
+      if(layer < 55){
+      //trackContainer->setLocalX(layer, cluster->getLocalX());
+      //trackContainer->setLocalY(layer, cluster->getLocalY());
+      uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
+      //trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      //std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
+      //trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
+      //trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
+      //trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
+      //trackContainer->setMaxAdcResiduals(tpcIndex, cluster->getMaxAdc());
+      //trackContainer->setPhiSizeResiduals(tpcIndex, cluster->getPhiSize());
+      //trackContainer->setZSizeResiduals(tpcIndex, cluster->getZSize());
+      //trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
+      //trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
+      //trackContainer->setValidResiduals(tpcIndex, true);
+      //trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
+      //trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
+
+
+/*
+      uint8_t flag = 0;
+
+
+      if(cluster->getZSize() > 3){
+        flag = flag + (1 >> 0);
+      }
+
+      if(cluster->getPhiSize() > 3){
+        flag = flag + (1 >> 1);
+      }
+
+      if(cluster->getEdge() > 2){
+        flag = flag + (1 >> 2);
+      }
+      if(cluster->getOverlap() > 3){
+        flag = flag + (1 >> 3);
+      }
+      std::cout << "flag: " << unsigned(flag) << std::endl;
+      //trackContainer->setFlagsResiduals(tpcIndex, flag);
+
+      //compress adc
+      uint8_t adcKey = uint8_t(m_compressor_adc->compressPhi(cluster->getAdc()));
+      //uint8_t maxAdcKey = uint8_t(m_compressor_adc->compressZ(cluster->getMaxAdc()));
+
+      uint8_t totalAdcKeyAndFlags = (flag << 4) + adcKey;   
+      std::cout << "totalAdcKeyAndFlags: " << unsigned(totalAdcKeyAndFlags) << std::endl;
+      trackContainer->setAdcInfoResidualsAndFlags(tpcIndex, totalAdcKeyAndFlags);
+
+*/
+      //now we have set everything except postition
+          Acts::Vector3 cglob;
+          std::cout << "Before cglob" << std::endl;
+          cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
+          std::cout << "Before surface" << std::endl;
+          std::cout << "cluster subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+          std::cout << "cluster hitsetkey: " << TrkrDefs::getHitSetKeyFromClusKey(cluster_key) << std::endl;
+          auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
+        
+          auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
+          auto radius = geoLayer->get_radius();
+          std::cout << "radius: " << radius << std::endl;
+          //std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+          //std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+          //std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+
+          auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(TPCSeed->get_qOverR()), TPCSeed->get_X0(), TPCSeed->get_Y0());
+            
+          std::cout << "Result(0): " << std::get<0>(result) << std::endl;
+          std::cout << "Result(1): " << std::get<1>(result) << std::endl;
+          std::cout << "Result(2): " << std::get<2>(result) << std::endl;
+          std::cout << "Result(3): " << std::get<3>(result) << std::endl;
+
+            
+          float positiveCompare = sqrt(pow(std::get<0>(result)-cglob(0),2) + pow(std::get<1>(result)-cglob(1),2));
+          float negativeCompare = sqrt(pow(std::get<2>(result)-cglob(0),2) + pow(std::get<3>(result)-cglob(1),2));
+
+          std::cout << "abs(std::get<0>(result)-cglob(0)): " << abs(std::get<0>(result)-cglob(0)) << std::endl;
+            
+          std::cout << "abs(std::get<3>(result)-cglob(0)): " << abs(std::get<2>(result)-cglob(0)) << std::endl;
+
+          std::cout << "positiveCompare: " << positiveCompare << std::endl;
+          std::cout << "negativeCompare: " << negativeCompare << std::endl;
+          
+          Acts::Vector3 globalIntersection;
+          
+          if(abs(positiveCompare) < abs(negativeCompare)){
+            //this means that the postive is closer than the negative
+            globalIntersection[0] = std::get<0>(result);
+            globalIntersection[1] = std::get<1>(result); 
+          }else{
+            globalIntersection[0] = std::get<2>(result);
+            globalIntersection[1] = std::get<3>(result); 
+          }
+
+          globalIntersection[2] = radius * TPCSeed->get_slope() + TPCSeed->get_Z0();
+
+          Acts::Vector3 localFromGlobalIntersectionNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * (globalIntersection * Acts::UnitConstants::cm);
+          localFromGlobalIntersectionNoTolerance /=  Acts::UnitConstants::cm;
+          std::cout << "localFromGlobalIntersectionNoTolerance(0): " << localFromGlobalIntersectionNoTolerance(0) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(1): " << localFromGlobalIntersectionNoTolerance(1) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(2): " << localFromGlobalIntersectionNoTolerance(2) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance.y(): " << localFromGlobalIntersectionNoTolerance.y() << std::endl;
+
+
+          double surfaceZCenter2 = 52.89; //this is where G4 thinks the surface center is in cm
+          double drift_velocity2 = 8.0e-3;  // cm/ns
+
+          unsigned int side2 = TpcDefs::getSide(cluster_key);
+          float yintersection;
+          if(side2 == 0){
+            std::cout << "yFromIntersection: " << (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2 << std::endl;
+            yintersection = (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2;
+          }
+          else{
+            std::cout << "yFromIntersection: " << (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2 << std::endl;
+            yintersection = (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2;
+          }
+          float localXResidual;
+          float localYResidual;
+          //residual is cluster - helix fit
+          localXResidual = cluster->getLocalX() - localFromGlobalIntersectionNoTolerance(0);
+          localYResidual = cluster->getLocalY() - yintersection;
+          //now that we have residuals, run them through a compressor to get the keys
+          //we want to save
+          
+          std::cout << "localXResidual: " << localXResidual  << std::endl;
+          std::cout << "localYResidual: " << localYResidual  << std::endl;
+
+          trackContainer->setLocalX(tpcIndex, localXResidual);
+          trackContainer->setLocalY(tpcIndex, localYResidual);
+
+      }
+      
+      /*
+      else{
+        //Now do the 2 TPOT layers
+        std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+        //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+        uint8_t TPOTindex = layer - 48;
+        trackContainer->setLocalX(TPOTindex, cluster->getLocalX());
+        trackContainer->setLocalY(TPOTindex, cluster->getLocalY());
+        trackContainer->setSubSurfKey(TPOTindex, cluster->getSubSurfKey());
+        trackContainer->setPhiError(TPOTindex, cluster->getRPhiError());
+        trackContainer->setZError(TPOTindex, cluster->getZError());
+        trackContainer->setAdc(TPOTindex, cluster->getAdc());
+        trackContainer->setMaxAdc(TPOTindex, cluster->getMaxAdc());
+        trackContainer->setPhiSize(TPOTindex, cluster->getPhiSize());
+        trackContainer->setZSize(TPOTindex, cluster->getZSize());
+        trackContainer->setOverlap(TPOTindex, cluster->getOverlap());
+        trackContainer->setEdge(TPOTindex, cluster->getEdge());
+
+        std::cout << "TPC Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+        std::cout << "TPC Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+        trackContainer->setValid(TPOTindex, true);
+
+        if(trackContainer->getValid(TPOTindex)){
+          std::cout << "Valid is true" << std::endl;
+        }
+
+        trackContainer->setSide(TPOTindex, TrkrDefs::getZElement(cluster_key));
+        trackContainer->setSectorId(TPOTindex, TrkrDefs::getPhiElement(cluster_key));
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      //TrkrDefs::
+
+      //loop over clusterKeys to match
+      }
+
+      */
+      //}
+    }
+ // }
+  }
+
+  /*
+  if(trackContainer->get_does_silicon_seed_exist()){
+    std::cout << "We are about to loop over cluster keys in Silicon Seed" << std::endl;
+  SiliconSeed->identify();
+    for( auto key_iter = SiliconSeed->begin_cluster_keys(); key_iter != SiliconSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){   
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+        //m_reduced_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+      }
+      //store cluster key
+      //silicon_cluster_keys->insert_cluster_key(cluster_key);
+
+      //store information in track array
+      std::cout << "Silicon clusterkey: " << cluster_key <<"\n";
+
+      std::cout << "Silicon subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+
+      std::cout << "Silicon layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+      //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+      trackContainer->setLocalX(layer, cluster->getPosition(0));
+      trackContainer->setLocalY(layer, cluster->getPosition(1));
+      trackContainer->setSubSurfKey(layer, cluster->getSubSurfKey());
+      trackContainer->setPhiError(layer, cluster->getRPhiError());
+      trackContainer->setZError(layer, cluster->getZError());
+      trackContainer->setAdc(layer, cluster->getAdc());
+      trackContainer->setMaxAdc(layer, cluster->getMaxAdc());
+      trackContainer->setPhiSize(layer, cluster->getPhiSize());
+      trackContainer->setZSize(layer, cluster->getZSize());
+      trackContainer->setOverlap(layer, cluster->getOverlap());
+      trackContainer->setEdge(layer, cluster->getEdge());
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
+
+      std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+      std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+      trackContainer->setSide(layer, TrkrDefs::getZElement(cluster_key));
+      trackContainer->setSectorId(layer, TrkrDefs::getPhiElement(cluster_key));
+
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      
+    }
+  }
+  */
+   
+    
+
+      /*
+      // find track state that is the closest to cluster
+      // this assumes that both clusters and states are sorted along r
+      const auto radius( cluster_struct.r );
+      float dr_min = -1;
+      for( auto iter = state_iter; iter != track->end_states(); ++iter )
+      {
+        const auto dr = std::abs( radius - get_r( iter->second->get_x(), iter->second->get_y() ) );
+        if( dr_min < 0 || dr < dr_min )
+        {
+          state_iter = iter;
+          dr_min = dr;
+        } else break;
+      }
+
+      // store track state in cluster struct
+      add_trk_information( cluster_struct, state_iter->second );
+
+      // add to track
+      track_struct.clusters.push_back( cluster_struct );
+      */
+      m_track_array_container_v9->add_trackarray(iTrk, trackContainer);
+      //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
+      //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
+      ++iTrk;
+  }
+
+      delete trackContainer;
+
+      //++iKey;
+      std::cout << "end of loop" << "\n";
+    }
+    
+
+     //m_track_map->clear();
+     m_track_map->Reset();
+     m_cluster_map->Reset();
+     
+     //m_cluster_map->Clear();
+
+
+    //cluster->getSubSurfKey();
+    //get a cluskey from a subsurfkey
+    //TPCSeed->find_cluster_key(cluskey);
+
+    
+
+
+
+}
+
+//make v9 no residual
+
+//_____________________________________________________________________
+void DSTTrackArrayWriter::no_silicon_evaluate_limited_trackv9_and_cluster_minimum_no_residual_compression(){
+//use this to create object that looks through both tracks and clusters and saves into new object
+//make sure clusters exist
+//std::cout << "start of check" << "\n";
+//if(!(m_cluster_map&&m_hitsetcontainer&&m_container)) return;
+//make sure tracks exist
+if( !( m_track_map && m_cluster_map && m_track_array_container_v9&&m_reduced_cluster_map && m_reduced_track_map ) ) {
+    return;
+}
+//std::cout << "after check" << "\n";
+//m_track_array_container->Reset();
+
+
+
+//TClonesArray& TrkContainer = *m_container->arrTrkContainer;
+//TrkContainer.Clear();
+
+
+Int_t iTrk = 0;
+  //long unsigned int iKey = 0;
+
+  //std::cout << "Before loop" << "\n";
+  for( const auto& trackpair:*m_track_map )
+  {
+    std::cout << "start of loop" << "\n";
+    //new(trkrDST[iCluster]) TrkrClusterv4();
+    // TrkrClusterv4* clsArr = (TrkrClusterv4*) trkrDST.ConstructedAt(iCluster);
+    
+
+    //unsigned int key = trackpair.first;
+    const auto track = trackpair.second;
+
+    
+
+    //auto track_struct = create_track( track );
+    /*
+    // truth information
+    const auto [id,contributors] = get_max_contributor( track );
+    track_struct.contributors = contributors;
+    
+    // get particle
+    auto particle = m_g4truthinfo->GetParticle(id);
+    track_struct.embed = get_embed(particle);
+    add_truth_information(track_struct, particle);
+    */
+    
+
+    //Store information from Track into new container that will also hold cluster information
+    //new(TrkContainer[iTrk]) SvtxTrackArray_v1;
+    //SvtxTrackArray_v1* trackContainer = (SvtxTrackArray_v1*) TrkContainer.ConstructedAt(iTrk);
+
+    SvtxTrackArray_v9* trackContainer = new SvtxTrackArray_v9();
+
+    /*
+    if(m_container->getArrayKeysSize()<(iKey+1)){
+        m_container->resizeArrayKeys(iKey+1);
+    }
+    m_container->setArrayKeys(iKey,key);
+    */
+
+    //Save all information from a Track into the new container
+    /*
+    std::cout << "track get id:" << track->get_id() <<"\n"; 
+    trackContainer->set_id(track->get_id());
+    trackContainer->set_vertex_id(track->get_vertex_id());
+    trackContainer->set_positive_charge(track->get_positive_charge());
+    trackContainer->set_chisq(track->get_chisq());
+    trackContainer->set_ndf(track->get_ndf());
+    trackContainer->set_crossing(track->get_crossing());
+
+    trackContainer->set_x(track->get_x());
+    trackContainer->set_y(track->get_y());
+    trackContainer->set_z(track->get_z());
+    trackContainer->set_px(track->get_px());
+    trackContainer->set_py(track->get_py());
+    trackContainer->set_pz(track->get_pz());
+    */
+  
+
+    TrackSeed* TPCSeed = track->get_tpc_seed();
+    //TrackSeed* SiliconSeed = track->get_silicon_seed();
+
+    //check number of clusters in TPC
+    if(TPCSeed->size_cluster_keys() > 20){
+      m_reduced_track_map->insert(track);
+    
+
+    if(!TPCSeed){
+      std::cout << "TPCSeed does not exist \n";
+      //trackContainer->set_does_tpc_seed_exist(false);
+    }else{
+    //store information from tpc seed
+    //trackContainer->set_does_tpc_seed_exist(true);
+    //std::cout << "tpcseed:" << TPCSeed->get_qOverR() <<"\n"; 
+    //trackContainer->tpc_seed_set_qOverR(TPCSeed->get_qOverR());
+    //trackContainer->tpc_seed_set_X0(TPCSeed->get_X0());
+    //trackContainer->tpc_seed_set_Y0(TPCSeed->get_Y0());
+    //trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
+    //trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
+    //trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    //std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
+    //std::cout << "TPC qOverR: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC X0: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC Y0: " << TPCSeed->get_Y0() << std::endl;
+    //std::cout << "TPC crossing: " << TPCSeed->get_crossing() << std::endl;
+    }
+    /*
+    if(!SiliconSeed){
+      std::cout << "SiliconSeed does not exist \n";
+      trackContainer->set_does_silicon_seed_exist(false);
+    }else{
+    trackContainer->set_does_silicon_seed_exist(true);
+    //store information from silicon seed
+    std::cout << "silconseed:" << SiliconSeed->get_qOverR() <<"\n"; 
+    trackContainer->silicon_seed_set_qOverR(SiliconSeed->get_qOverR());
+    trackContainer->silicon_seed_set_X0(SiliconSeed->get_X0());
+    trackContainer->silicon_seed_set_Y0(SiliconSeed->get_Y0());
+    trackContainer->silicon_seed_set_slope(SiliconSeed->get_slope());
+    trackContainer->silicon_seed_set_Z0(SiliconSeed->get_Z0());
+    trackContainer->silicon_seed_set_crossing(SiliconSeed->get_crossing());
+    std::cout << "Silicon qOverR: " << SiliconSeed->get_qOverR() << std::endl;
+    std::cout << "Silicon X0 " << SiliconSeed->get_X0() << std::endl;
+    std::cout << "Silicon Y0: " << SiliconSeed->get_Y0() << std::endl;
+    std::cout << "Silicon crossing: " << SiliconSeed->get_crossing() << std::endl;
+    }
+    */
+    //trackContainer->copy_states(track);
+    //store clusterkeyset from each seed
+
+  
+
+  if(TPCSeed){
+    std::cout << "We are about to loop over cluster keys in TPC Seed" << std::endl;
+  TPCSeed->identify();
+    for( auto key_iter = TPCSeed->begin_cluster_keys(); key_iter != TPCSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){
+            
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+
+      }
+      //store information in track array
+      std::cout << "TPC clusterkey: " << cluster_key <<"\n";
+      std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
+
+      //if layer is under 55, fill cluster_residual_array
+      if(layer < 55){
+      //trackContainer->setLocalX(layer, cluster->getLocalX());
+      //trackContainer->setLocalY(layer, cluster->getLocalY());
+      uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
+      //trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      //std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
+      //trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
+      //trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
+      //trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
+      //trackContainer->setMaxAdcResiduals(tpcIndex, cluster->getMaxAdc());
+      //trackContainer->setPhiSizeResiduals(tpcIndex, cluster->getPhiSize());
+      //trackContainer->setZSizeResiduals(tpcIndex, cluster->getZSize());
+      //trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
+      //trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
+      //trackContainer->setValidResiduals(tpcIndex, true);
+      //trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
+      //trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
+
+
+/*
+      uint8_t flag = 0;
+
+
+      if(cluster->getZSize() > 3){
+        flag = flag + (1 >> 0);
+      }
+
+      if(cluster->getPhiSize() > 3){
+        flag = flag + (1 >> 1);
+      }
+
+      if(cluster->getEdge() > 2){
+        flag = flag + (1 >> 2);
+      }
+      if(cluster->getOverlap() > 3){
+        flag = flag + (1 >> 3);
+      }
+      std::cout << "flag: " << unsigned(flag) << std::endl;
+      //trackContainer->setFlagsResiduals(tpcIndex, flag);
+
+      //compress adc
+      uint8_t adcKey = uint8_t(m_compressor_adc->compressPhi(cluster->getAdc()));
+      //uint8_t maxAdcKey = uint8_t(m_compressor_adc->compressZ(cluster->getMaxAdc()));
+
+      uint8_t totalAdcKeyAndFlags = (flag << 4) + adcKey;   
+      std::cout << "totalAdcKeyAndFlags: " << unsigned(totalAdcKeyAndFlags) << std::endl;
+      trackContainer->setAdcInfoResidualsAndFlags(tpcIndex, totalAdcKeyAndFlags);
+
+*/
+      trackContainer->setLocalX(tpcIndex, cluster->getLocalX());
+      trackContainer->setLocalY(tpcIndex, cluster->getLocalY());
+          
+          
+
+          
+        
+        
+      }
+      
+      /*
+      else{
+        //Now do the 2 TPOT layers
+        std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+        //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+        uint8_t TPOTindex = layer - 48;
+        trackContainer->setLocalX(TPOTindex, cluster->getLocalX());
+        trackContainer->setLocalY(TPOTindex, cluster->getLocalY());
+        trackContainer->setSubSurfKey(TPOTindex, cluster->getSubSurfKey());
+        trackContainer->setPhiError(TPOTindex, cluster->getRPhiError());
+        trackContainer->setZError(TPOTindex, cluster->getZError());
+        trackContainer->setAdc(TPOTindex, cluster->getAdc());
+        trackContainer->setMaxAdc(TPOTindex, cluster->getMaxAdc());
+        trackContainer->setPhiSize(TPOTindex, cluster->getPhiSize());
+        trackContainer->setZSize(TPOTindex, cluster->getZSize());
+        trackContainer->setOverlap(TPOTindex, cluster->getOverlap());
+        trackContainer->setEdge(TPOTindex, cluster->getEdge());
+
+        std::cout << "TPC Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+        std::cout << "TPC Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+        trackContainer->setValid(TPOTindex, true);
+
+        if(trackContainer->getValid(TPOTindex)){
+          std::cout << "Valid is true" << std::endl;
+        }
+
+        trackContainer->setSide(TPOTindex, TrkrDefs::getZElement(cluster_key));
+        trackContainer->setSectorId(TPOTindex, TrkrDefs::getPhiElement(cluster_key));
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      //TrkrDefs::
+
+      //loop over clusterKeys to match
+      }
+
+      */
+      //}
+    }
+ // }
+  }
+
+  /*
+  if(trackContainer->get_does_silicon_seed_exist()){
+    std::cout << "We are about to loop over cluster keys in Silicon Seed" << std::endl;
+  SiliconSeed->identify();
+    for( auto key_iter = SiliconSeed->begin_cluster_keys(); key_iter != SiliconSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){   
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+        //m_reduced_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+      }
+      //store cluster key
+      //silicon_cluster_keys->insert_cluster_key(cluster_key);
+
+      //store information in track array
+      std::cout << "Silicon clusterkey: " << cluster_key <<"\n";
+
+      std::cout << "Silicon subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+
+      std::cout << "Silicon layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+      //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+      trackContainer->setLocalX(layer, cluster->getPosition(0));
+      trackContainer->setLocalY(layer, cluster->getPosition(1));
+      trackContainer->setSubSurfKey(layer, cluster->getSubSurfKey());
+      trackContainer->setPhiError(layer, cluster->getRPhiError());
+      trackContainer->setZError(layer, cluster->getZError());
+      trackContainer->setAdc(layer, cluster->getAdc());
+      trackContainer->setMaxAdc(layer, cluster->getMaxAdc());
+      trackContainer->setPhiSize(layer, cluster->getPhiSize());
+      trackContainer->setZSize(layer, cluster->getZSize());
+      trackContainer->setOverlap(layer, cluster->getOverlap());
+      trackContainer->setEdge(layer, cluster->getEdge());
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
+
+      std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+      std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+      trackContainer->setSide(layer, TrkrDefs::getZElement(cluster_key));
+      trackContainer->setSectorId(layer, TrkrDefs::getPhiElement(cluster_key));
+
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      
+    }
+  }
+  */
+   
+    
+
+      /*
+      // find track state that is the closest to cluster
+      // this assumes that both clusters and states are sorted along r
+      const auto radius( cluster_struct.r );
+      float dr_min = -1;
+      for( auto iter = state_iter; iter != track->end_states(); ++iter )
+      {
+        const auto dr = std::abs( radius - get_r( iter->second->get_x(), iter->second->get_y() ) );
+        if( dr_min < 0 || dr < dr_min )
+        {
+          state_iter = iter;
+          dr_min = dr;
+        } else break;
+      }
+
+      // store track state in cluster struct
+      add_trk_information( cluster_struct, state_iter->second );
+
+      // add to track
+      track_struct.clusters.push_back( cluster_struct );
+      */
+      m_track_array_container_v9->add_trackarray(iTrk, trackContainer);
+      //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
+      //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
+      ++iTrk;
+  }
+
+      delete trackContainer;
+
+      //++iKey;
+      std::cout << "end of loop" << "\n";
+    }
+    
+
+     //m_track_map->clear();
+     m_track_map->Reset();
+     m_cluster_map->Reset();
+     
+     //m_cluster_map->Clear();
+
+
+    //cluster->getSubSurfKey();
+    //get a cluskey from a subsurfkey
+    //TPCSeed->find_cluster_key(cluskey);
+
+    
+
+
+
+}
+
+//make v10
+
+//_____________________________________________________________________
+void DSTTrackArrayWriter::no_silicon_evaluate_limited_trackv10_and_cluster_minimum_compression(){
+//use this to create object that looks through both tracks and clusters and saves into new object
+//make sure clusters exist
+//std::cout << "start of check" << "\n";
+//if(!(m_cluster_map&&m_hitsetcontainer&&m_container)) return;
+//make sure tracks exist
+if( !( m_track_map && m_cluster_map && m_track_array_container_v10&&m_reduced_cluster_map && m_reduced_track_map ) ) {
+    return;
+}
+//std::cout << "after check" << "\n";
+//m_track_array_container->Reset();
+
+
+
+//TClonesArray& TrkContainer = *m_container->arrTrkContainer;
+//TrkContainer.Clear();
+
+
+Int_t iTrk = 0;
+  //long unsigned int iKey = 0;
+
+  //std::cout << "Before loop" << "\n";
+  for( const auto& trackpair:*m_track_map )
+  {
+    std::cout << "start of loop" << "\n";
+    //new(trkrDST[iCluster]) TrkrClusterv4();
+    // TrkrClusterv4* clsArr = (TrkrClusterv4*) trkrDST.ConstructedAt(iCluster);
+    
+
+    //unsigned int key = trackpair.first;
+    const auto track = trackpair.second;
+
+    
+
+    //auto track_struct = create_track( track );
+    /*
+    // truth information
+    const auto [id,contributors] = get_max_contributor( track );
+    track_struct.contributors = contributors;
+    
+    // get particle
+    auto particle = m_g4truthinfo->GetParticle(id);
+    track_struct.embed = get_embed(particle);
+    add_truth_information(track_struct, particle);
+    */
+    
+
+    //Store information from Track into new container that will also hold cluster information
+    //new(TrkContainer[iTrk]) SvtxTrackArray_v1;
+    //SvtxTrackArray_v1* trackContainer = (SvtxTrackArray_v1*) TrkContainer.ConstructedAt(iTrk);
+
+    SvtxTrackArray_v10* trackContainer = new SvtxTrackArray_v10();
+
+    /*
+    if(m_container->getArrayKeysSize()<(iKey+1)){
+        m_container->resizeArrayKeys(iKey+1);
+    }
+    m_container->setArrayKeys(iKey,key);
+    */
+
+    //Save all information from a Track into the new container
+    /*
+    std::cout << "track get id:" << track->get_id() <<"\n"; 
+    trackContainer->set_id(track->get_id());
+    trackContainer->set_vertex_id(track->get_vertex_id());
+    trackContainer->set_positive_charge(track->get_positive_charge());
+    trackContainer->set_chisq(track->get_chisq());
+    trackContainer->set_ndf(track->get_ndf());
+    trackContainer->set_crossing(track->get_crossing());
+
+    trackContainer->set_x(track->get_x());
+    trackContainer->set_y(track->get_y());
+    trackContainer->set_z(track->get_z());
+    trackContainer->set_px(track->get_px());
+    trackContainer->set_py(track->get_py());
+    trackContainer->set_pz(track->get_pz());
+    */
+  
+
+    TrackSeed* TPCSeed = track->get_tpc_seed();
+    //TrackSeed* SiliconSeed = track->get_silicon_seed();
+
+    //check number of clusters in TPC
+    if(TPCSeed->size_cluster_keys() > 20){
+      m_reduced_track_map->insert(track);
+    
+
+    if(!TPCSeed){
+      std::cout << "TPCSeed does not exist \n";
+      //trackContainer->set_does_tpc_seed_exist(false);
+    }else{
+    //store information from tpc seed
+    //trackContainer->set_does_tpc_seed_exist(true);
+    //std::cout << "tpcseed:" << TPCSeed->get_qOverR() <<"\n"; 
+    //trackContainer->tpc_seed_set_qOverR(TPCSeed->get_qOverR());
+    //trackContainer->tpc_seed_set_X0(TPCSeed->get_X0());
+    //trackContainer->tpc_seed_set_Y0(TPCSeed->get_Y0());
+    //trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
+    //trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
+    //trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    //std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
+    //std::cout << "TPC qOverR: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC X0: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC Y0: " << TPCSeed->get_Y0() << std::endl;
+    //std::cout << "TPC crossing: " << TPCSeed->get_crossing() << std::endl;
+    }
+    /*
+    if(!SiliconSeed){
+      std::cout << "SiliconSeed does not exist \n";
+      trackContainer->set_does_silicon_seed_exist(false);
+    }else{
+    trackContainer->set_does_silicon_seed_exist(true);
+    //store information from silicon seed
+    std::cout << "silconseed:" << SiliconSeed->get_qOverR() <<"\n"; 
+    trackContainer->silicon_seed_set_qOverR(SiliconSeed->get_qOverR());
+    trackContainer->silicon_seed_set_X0(SiliconSeed->get_X0());
+    trackContainer->silicon_seed_set_Y0(SiliconSeed->get_Y0());
+    trackContainer->silicon_seed_set_slope(SiliconSeed->get_slope());
+    trackContainer->silicon_seed_set_Z0(SiliconSeed->get_Z0());
+    trackContainer->silicon_seed_set_crossing(SiliconSeed->get_crossing());
+    std::cout << "Silicon qOverR: " << SiliconSeed->get_qOverR() << std::endl;
+    std::cout << "Silicon X0 " << SiliconSeed->get_X0() << std::endl;
+    std::cout << "Silicon Y0: " << SiliconSeed->get_Y0() << std::endl;
+    std::cout << "Silicon crossing: " << SiliconSeed->get_crossing() << std::endl;
+    }
+    */
+    //trackContainer->copy_states(track);
+    //store clusterkeyset from each seed
+
+  
+
+  if(TPCSeed){
+    std::cout << "We are about to loop over cluster keys in TPC Seed" << std::endl;
+  TPCSeed->identify();
+    for( auto key_iter = TPCSeed->begin_cluster_keys(); key_iter != TPCSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){
+            
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+
+      }
+      //store information in track array
+      std::cout << "TPC clusterkey: " << cluster_key <<"\n";
+      std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
+
+      //if layer is under 55, fill cluster_residual_array
+      if(layer < 55){
+      //trackContainer->setLocalX(layer, cluster->getLocalX());
+      //trackContainer->setLocalY(layer, cluster->getLocalY());
+      uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
+      //trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      //std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
+      //trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
+      //trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
+      //trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
+      //trackContainer->setMaxAdcResiduals(tpcIndex, cluster->getMaxAdc());
+      //trackContainer->setPhiSizeResiduals(tpcIndex, cluster->getPhiSize());
+      //trackContainer->setZSizeResiduals(tpcIndex, cluster->getZSize());
+      //trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
+      //trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
+      //trackContainer->setValidResiduals(tpcIndex, true);
+      //trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
+      //trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
+
+
+/*
+      uint8_t flag = 0;
+
+
+      if(cluster->getZSize() > 3){
+        flag = flag + (1 >> 0);
+      }
+
+      if(cluster->getPhiSize() > 3){
+        flag = flag + (1 >> 1);
+      }
+
+      if(cluster->getEdge() > 2){
+        flag = flag + (1 >> 2);
+      }
+      if(cluster->getOverlap() > 3){
+        flag = flag + (1 >> 3);
+      }
+      std::cout << "flag: " << unsigned(flag) << std::endl;
+      //trackContainer->setFlagsResiduals(tpcIndex, flag);
+
+      //compress adc
+      uint8_t adcKey = uint8_t(m_compressor_adc->compressPhi(cluster->getAdc()));
+      //uint8_t maxAdcKey = uint8_t(m_compressor_adc->compressZ(cluster->getMaxAdc()));
+      uint8_t totalAdcKeyAndFlags = (flag << 4) + adcKey;   
+      std::cout << "totalAdcKeyAndFlags: " << unsigned(totalAdcKeyAndFlags) << std::endl;
+      trackContainer->setAdcInfoResidualsAndFlags(tpcIndex, totalAdcKeyAndFlags);
+
+*/
+      //trackContainer->setLocalX(tpcIndex, cluster->getLocalX());
+      //trackContainer->setLocalY(tpcIndex, cluster->getLocalY());
+
+      //range of short is 	-32,768 to 32,767
+      //range of x is -2 to 2 (more like -1.6 to 1.6 but give room)
+      //range of y is up to 15,000 or 16,000
+      // multiply x by 16,000 then round to int
+      // multiple y by 2 then round to int
+
+      //resolution we need is 200 or 1000 for 10 micron
+
+      // y direction do 
+
+      short localXint = (short) (cluster->getLocalX() * 1000);
+      short localYint = (short) (cluster->getLocalY() * 2);
+
+      trackContainer->setLocalXInt(tpcIndex, localXint);
+      trackContainer->setLocalYInt(tpcIndex, localYint);
+          
+          
+      std::cout << "LocalXInt: " << localXint << std::endl;
+      std::cout << "LocalYInt: " << localYint << std::endl;
+          
+        
+        
+      }
+      
+      /*
+      else{
+        //Now do the 2 TPOT layers
+        std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+        //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+        uint8_t TPOTindex = layer - 48;
+        trackContainer->setLocalX(TPOTindex, cluster->getLocalX());
+        trackContainer->setLocalY(TPOTindex, cluster->getLocalY());
+        trackContainer->setSubSurfKey(TPOTindex, cluster->getSubSurfKey());
+        trackContainer->setPhiError(TPOTindex, cluster->getRPhiError());
+        trackContainer->setZError(TPOTindex, cluster->getZError());
+        trackContainer->setAdc(TPOTindex, cluster->getAdc());
+        trackContainer->setMaxAdc(TPOTindex, cluster->getMaxAdc());
+        trackContainer->setPhiSize(TPOTindex, cluster->getPhiSize());
+        trackContainer->setZSize(TPOTindex, cluster->getZSize());
+        trackContainer->setOverlap(TPOTindex, cluster->getOverlap());
+        trackContainer->setEdge(TPOTindex, cluster->getEdge());
+
+        std::cout << "TPC Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+        std::cout << "TPC Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+        trackContainer->setValid(TPOTindex, true);
+
+        if(trackContainer->getValid(TPOTindex)){
+          std::cout << "Valid is true" << std::endl;
+        }
+
+        trackContainer->setSide(TPOTindex, TrkrDefs::getZElement(cluster_key));
+        trackContainer->setSectorId(TPOTindex, TrkrDefs::getPhiElement(cluster_key));
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      //TrkrDefs::
+
+      //loop over clusterKeys to match
+      }
+
+      */
+      //}
+    }
+ // }
+  }
+
+  /*
+  if(trackContainer->get_does_silicon_seed_exist()){
+    std::cout << "We are about to loop over cluster keys in Silicon Seed" << std::endl;
+  SiliconSeed->identify();
+    for( auto key_iter = SiliconSeed->begin_cluster_keys(); key_iter != SiliconSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){   
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+        //m_reduced_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+      }
+      //store cluster key
+      //silicon_cluster_keys->insert_cluster_key(cluster_key);
+
+      //store information in track array
+      std::cout << "Silicon clusterkey: " << cluster_key <<"\n";
+
+      std::cout << "Silicon subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+
+      std::cout << "Silicon layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+      //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+      trackContainer->setLocalX(layer, cluster->getPosition(0));
+      trackContainer->setLocalY(layer, cluster->getPosition(1));
+      trackContainer->setSubSurfKey(layer, cluster->getSubSurfKey());
+      trackContainer->setPhiError(layer, cluster->getRPhiError());
+      trackContainer->setZError(layer, cluster->getZError());
+      trackContainer->setAdc(layer, cluster->getAdc());
+      trackContainer->setMaxAdc(layer, cluster->getMaxAdc());
+      trackContainer->setPhiSize(layer, cluster->getPhiSize());
+      trackContainer->setZSize(layer, cluster->getZSize());
+      trackContainer->setOverlap(layer, cluster->getOverlap());
+      trackContainer->setEdge(layer, cluster->getEdge());
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
+
+      std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+      std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+      trackContainer->setSide(layer, TrkrDefs::getZElement(cluster_key));
+      trackContainer->setSectorId(layer, TrkrDefs::getPhiElement(cluster_key));
+
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      
+    }
+  }
+  */
+   
+    
+
+      /*
+      // find track state that is the closest to cluster
+      // this assumes that both clusters and states are sorted along r
+      const auto radius( cluster_struct.r );
+      float dr_min = -1;
+      for( auto iter = state_iter; iter != track->end_states(); ++iter )
+      {
+        const auto dr = std::abs( radius - get_r( iter->second->get_x(), iter->second->get_y() ) );
+        if( dr_min < 0 || dr < dr_min )
+        {
+          state_iter = iter;
+          dr_min = dr;
+        } else break;
+      }
+
+      // store track state in cluster struct
+      add_trk_information( cluster_struct, state_iter->second );
+
+      // add to track
+      track_struct.clusters.push_back( cluster_struct );
+      */
+      m_track_array_container_v10->add_trackarray(iTrk, trackContainer);
+      //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
+      //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
+      ++iTrk;
+  }
+
+      delete trackContainer;
+
+      //++iKey;
+      std::cout << "end of loop" << "\n";
+    }
+    
+
+     //m_track_map->clear();
+     m_track_map->Reset();
+     m_cluster_map->Reset();
+     
+     //m_cluster_map->Clear();
+
+
+    //cluster->getSubSurfKey();
+    //get a cluskey from a subsurfkey
+    //TPCSeed->find_cluster_key(cluskey);
+
+    
+
+
+
+}
+
+//v10 residuals
+
+
+//_____________________________________________________________________
+void DSTTrackArrayWriter::no_silicon_evaluate_limited_trackv10_and_cluster_minimum_residual_compression(){
+//use this to create object that looks through both tracks and clusters and saves into new object
+//make sure clusters exist
+//std::cout << "start of check" << "\n";
+//if(!(m_cluster_map&&m_hitsetcontainer&&m_container)) return;
+//make sure tracks exist
+if( !( m_track_map && m_cluster_map && m_track_array_container_v10&&m_reduced_cluster_map && m_reduced_track_map ) ) {
+    return;
+}
+//std::cout << "after check" << "\n";
+//m_track_array_container->Reset();
+
+
+
+//TClonesArray& TrkContainer = *m_container->arrTrkContainer;
+//TrkContainer.Clear();
+
+
+Int_t iTrk = 0;
+  //long unsigned int iKey = 0;
+
+  //std::cout << "Before loop" << "\n";
+  for( const auto& trackpair:*m_track_map )
+  {
+    std::cout << "start of loop" << "\n";
+    //new(trkrDST[iCluster]) TrkrClusterv4();
+    // TrkrClusterv4* clsArr = (TrkrClusterv4*) trkrDST.ConstructedAt(iCluster);
+    
+
+    //unsigned int key = trackpair.first;
+    const auto track = trackpair.second;
+
+    
+
+    //auto track_struct = create_track( track );
+    /*
+    // truth information
+    const auto [id,contributors] = get_max_contributor( track );
+    track_struct.contributors = contributors;
+    
+    // get particle
+    auto particle = m_g4truthinfo->GetParticle(id);
+    track_struct.embed = get_embed(particle);
+    add_truth_information(track_struct, particle);
+    */
+    
+
+    //Store information from Track into new container that will also hold cluster information
+    //new(TrkContainer[iTrk]) SvtxTrackArray_v1;
+    //SvtxTrackArray_v1* trackContainer = (SvtxTrackArray_v1*) TrkContainer.ConstructedAt(iTrk);
+
+    SvtxTrackArray_v10* trackContainer = new SvtxTrackArray_v10();
+
+    /*
+    if(m_container->getArrayKeysSize()<(iKey+1)){
+        m_container->resizeArrayKeys(iKey+1);
+    }
+    m_container->setArrayKeys(iKey,key);
+    */
+
+    //Save all information from a Track into the new container
+    /*
+    std::cout << "track get id:" << track->get_id() <<"\n"; 
+    trackContainer->set_id(track->get_id());
+    trackContainer->set_vertex_id(track->get_vertex_id());
+    trackContainer->set_positive_charge(track->get_positive_charge());
+    trackContainer->set_chisq(track->get_chisq());
+    trackContainer->set_ndf(track->get_ndf());
+    trackContainer->set_crossing(track->get_crossing());
+
+    trackContainer->set_x(track->get_x());
+    trackContainer->set_y(track->get_y());
+    trackContainer->set_z(track->get_z());
+    trackContainer->set_px(track->get_px());
+    trackContainer->set_py(track->get_py());
+    trackContainer->set_pz(track->get_pz());
+    */
+  
+
+    TrackSeed* TPCSeed = track->get_tpc_seed();
+    //TrackSeed* SiliconSeed = track->get_silicon_seed();
+
+    //check number of clusters in TPC
+    if(TPCSeed->size_cluster_keys() > 20){
+      m_reduced_track_map->insert(track);
+    
+
+    if(!TPCSeed){
+      std::cout << "TPCSeed does not exist \n";
+      //trackContainer->set_does_tpc_seed_exist(false);
+    }else{
+    //store information from tpc seed
+    //trackContainer->set_does_tpc_seed_exist(true);
+    //std::cout << "tpcseed:" << TPCSeed->get_qOverR() <<"\n"; 
+    //trackContainer->tpc_seed_set_qOverR(TPCSeed->get_qOverR());
+    //trackContainer->tpc_seed_set_X0(TPCSeed->get_X0());
+    //trackContainer->tpc_seed_set_Y0(TPCSeed->get_Y0());
+    //trackContainer->tpc_seed_set_slope(TPCSeed->get_slope());
+    //trackContainer->tpc_seed_set_Z0(TPCSeed->get_Z0());
+    //trackContainer->tpc_seed_set_crossing(TPCSeed->get_crossing());
+    
+    //std::cout << "Size of TPC Clusters: " << TPCSeed->size_cluster_keys() << std::endl;
+    //std::cout << "TPC qOverR: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC X0: " << TPCSeed->get_qOverR() << std::endl;
+    //std::cout << "TPC Y0: " << TPCSeed->get_Y0() << std::endl;
+    //std::cout << "TPC crossing: " << TPCSeed->get_crossing() << std::endl;
+    }
+    /*
+    if(!SiliconSeed){
+      std::cout << "SiliconSeed does not exist \n";
+      trackContainer->set_does_silicon_seed_exist(false);
+    }else{
+    trackContainer->set_does_silicon_seed_exist(true);
+    //store information from silicon seed
+    std::cout << "silconseed:" << SiliconSeed->get_qOverR() <<"\n"; 
+    trackContainer->silicon_seed_set_qOverR(SiliconSeed->get_qOverR());
+    trackContainer->silicon_seed_set_X0(SiliconSeed->get_X0());
+    trackContainer->silicon_seed_set_Y0(SiliconSeed->get_Y0());
+    trackContainer->silicon_seed_set_slope(SiliconSeed->get_slope());
+    trackContainer->silicon_seed_set_Z0(SiliconSeed->get_Z0());
+    trackContainer->silicon_seed_set_crossing(SiliconSeed->get_crossing());
+    std::cout << "Silicon qOverR: " << SiliconSeed->get_qOverR() << std::endl;
+    std::cout << "Silicon X0 " << SiliconSeed->get_X0() << std::endl;
+    std::cout << "Silicon Y0: " << SiliconSeed->get_Y0() << std::endl;
+    std::cout << "Silicon crossing: " << SiliconSeed->get_crossing() << std::endl;
+    }
+    */
+    //trackContainer->copy_states(track);
+    //store clusterkeyset from each seed
+
+  
+
+  if(TPCSeed){
+    std::cout << "We are about to loop over cluster keys in TPC Seed" << std::endl;
+  TPCSeed->identify();
+    for( auto key_iter = TPCSeed->begin_cluster_keys(); key_iter != TPCSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){
+            
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+
+      }
+      //store information in track array
+      std::cout << "TPC clusterkey: " << cluster_key <<"\n";
+      std::cout << "TPC subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+      std::cout << "Layer: " << unsigned(layer) << std::endl;
+
+      //if layer is under 55, fill cluster_residual_array
+      if(layer < 55){
+      //trackContainer->setLocalX(layer, cluster->getLocalX());
+      //trackContainer->setLocalY(layer, cluster->getLocalY());
+      uint8_t tpcIndex = layer - 7;
+      std::cout << "tpcIndex: " << unsigned(tpcIndex) << std::endl;
+      //trackContainer->setSubSurfKeyResiduals(tpcIndex, cluster->getSubSurfKey());
+      //std::cout << "trackContainer subsurfkey: " << trackContainer->getSubSurfKeyResiduals(tpcIndex) << std::endl;
+      //trackContainer->setPhiErrorResiduals(tpcIndex, cluster->getRPhiError());
+      //trackContainer->setZErrorResiduals(tpcIndex, cluster->getZError());
+      //trackContainer->setAdcResiduals(tpcIndex, cluster->getAdc());
+      //trackContainer->setMaxAdcResiduals(tpcIndex, cluster->getMaxAdc());
+      //trackContainer->setPhiSizeResiduals(tpcIndex, cluster->getPhiSize());
+      //trackContainer->setZSizeResiduals(tpcIndex, cluster->getZSize());
+      //trackContainer->setOverlapResiduals(tpcIndex, cluster->getOverlap());
+      //trackContainer->setEdgeResiduals(tpcIndex, cluster->getEdge());
+      //trackContainer->setValidResiduals(tpcIndex, true);
+      //trackContainer->setSideResiduals(tpcIndex, TrkrDefs::getZElement(cluster_key));
+      //trackContainer->setSectorIdResiduals(tpcIndex, TrkrDefs::getPhiElement(cluster_key));
+
+
+/*
+      uint8_t flag = 0;
+
+
+      if(cluster->getZSize() > 3){
+        flag = flag + (1 >> 0);
+      }
+
+      if(cluster->getPhiSize() > 3){
+        flag = flag + (1 >> 1);
+      }
+
+      if(cluster->getEdge() > 2){
+        flag = flag + (1 >> 2);
+      }
+      if(cluster->getOverlap() > 3){
+        flag = flag + (1 >> 3);
+      }
+      std::cout << "flag: " << unsigned(flag) << std::endl;
+      //trackContainer->setFlagsResiduals(tpcIndex, flag);
+
+      //compress adc
+      uint8_t adcKey = uint8_t(m_compressor_adc->compressPhi(cluster->getAdc()));
+      //uint8_t maxAdcKey = uint8_t(m_compressor_adc->compressZ(cluster->getMaxAdc()));
+
+      uint8_t totalAdcKeyAndFlags = (flag << 4) + adcKey;   
+      std::cout << "totalAdcKeyAndFlags: " << unsigned(totalAdcKeyAndFlags) << std::endl;
+      trackContainer->setAdcInfoResidualsAndFlags(tpcIndex, totalAdcKeyAndFlags);
+
+*/
+      //now we have set everything except postition
+          Acts::Vector3 cglob;
+          std::cout << "Before cglob" << std::endl;
+          cglob = tgeometry->getGlobalPosition(cluster_key, cluster);
+          std::cout << "Before surface" << std::endl;
+          std::cout << "cluster subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+          std::cout << "cluster hitsetkey: " << TrkrDefs::getHitSetKeyFromClusKey(cluster_key) << std::endl;
+          auto surface = tgeometry->maps().getSurface(cluster_key, cluster);
+        
+          auto geoLayer = tpcGeom->GetLayerCellGeom(layer);
+          auto radius = geoLayer->get_radius();
+          std::cout << "radius: " << radius << std::endl;
+          //std::cout << "tpc_R: " << 1.0/abs(trackContainer->tpc_seed_get_qOverR()) << std::endl;
+          //std::cout << "tpc_X0: " << trackContainer->tpc_seed_get_X0() << std::endl;
+          //std::cout << "tpc_Y0: " << trackContainer->tpc_seed_get_Y0() << std::endl;
+
+          auto result = TrackFitUtils::circle_circle_intersection(radius, 1.0/abs(TPCSeed->get_qOverR()), TPCSeed->get_X0(), TPCSeed->get_Y0());
+            
+          std::cout << "Result(0): " << std::get<0>(result) << std::endl;
+          std::cout << "Result(1): " << std::get<1>(result) << std::endl;
+          std::cout << "Result(2): " << std::get<2>(result) << std::endl;
+          std::cout << "Result(3): " << std::get<3>(result) << std::endl;
+
+            
+          float positiveCompare = sqrt(pow(std::get<0>(result)-cglob(0),2) + pow(std::get<1>(result)-cglob(1),2));
+          float negativeCompare = sqrt(pow(std::get<2>(result)-cglob(0),2) + pow(std::get<3>(result)-cglob(1),2));
+
+          std::cout << "abs(std::get<0>(result)-cglob(0)): " << abs(std::get<0>(result)-cglob(0)) << std::endl;
+            
+          std::cout << "abs(std::get<3>(result)-cglob(0)): " << abs(std::get<2>(result)-cglob(0)) << std::endl;
+
+          std::cout << "positiveCompare: " << positiveCompare << std::endl;
+          std::cout << "negativeCompare: " << negativeCompare << std::endl;
+          
+          Acts::Vector3 globalIntersection;
+          
+          if(abs(positiveCompare) < abs(negativeCompare)){
+            //this means that the postive is closer than the negative
+            globalIntersection[0] = std::get<0>(result);
+            globalIntersection[1] = std::get<1>(result); 
+          }else{
+            globalIntersection[0] = std::get<2>(result);
+            globalIntersection[1] = std::get<3>(result); 
+          }
+
+          globalIntersection[2] = radius * TPCSeed->get_slope() + TPCSeed->get_Z0();
+
+          Acts::Vector3 localFromGlobalIntersectionNoTolerance = (surface->transform(tgeometry->geometry().getGeoContext())).inverse() * (globalIntersection * Acts::UnitConstants::cm);
+          localFromGlobalIntersectionNoTolerance /=  Acts::UnitConstants::cm;
+          std::cout << "localFromGlobalIntersectionNoTolerance(0): " << localFromGlobalIntersectionNoTolerance(0) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(1): " << localFromGlobalIntersectionNoTolerance(1) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance(2): " << localFromGlobalIntersectionNoTolerance(2) << std::endl;
+          std::cout << "localFromGlobalIntersectionNoTolerance.y(): " << localFromGlobalIntersectionNoTolerance.y() << std::endl;
+
+
+          double surfaceZCenter2 = 52.89; //this is where G4 thinks the surface center is in cm
+          double drift_velocity2 = 8.0e-3;  // cm/ns
+
+          unsigned int side2 = TpcDefs::getSide(cluster_key);
+          float yintersection;
+          if(side2 == 0){
+            std::cout << "yFromIntersection: " << (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2 << std::endl;
+            yintersection = (localFromGlobalIntersectionNoTolerance.y() + surfaceZCenter2)/drift_velocity2;
+          }
+          else{
+            std::cout << "yFromIntersection: " << (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2 << std::endl;
+            yintersection = (surfaceZCenter2 - localFromGlobalIntersectionNoTolerance.y())/drift_velocity2;
+          }
+          float localXResidual;
+          float localYResidual;
+          //residual is cluster - helix fit
+          localXResidual = cluster->getLocalX() - localFromGlobalIntersectionNoTolerance(0);
+          localYResidual = cluster->getLocalY() - yintersection;
+          //now that we have residuals, run them through a compressor to get the keys
+          //we want to save
+          
+          std::cout << "localXResidual: " << localXResidual  << std::endl;
+          std::cout << "localYResidual: " << localYResidual  << std::endl;
+
+          //trackContainer->setLocalX(tpcIndex, localXResidual);
+          //trackContainer->setLocalY(tpcIndex, localYResidual);
+
+          //range of short is 	-32,768 to 32,767
+          //range of x is -6 to 6 (more like -1.6 to 1.6 but give room)
+          //range of y is up to -1000 to 1000
+          // multiply x by 5,000 then round to int
+          // multiple y by 32 then round to int
+          short localXint = (short) (localXResidual * 1000);
+          short localYint = (short) (localYResidual * 2);
+
+          trackContainer->setLocalXInt(tpcIndex, localXint);
+          trackContainer->setLocalYInt(tpcIndex, localYint);
+
+      }
+      
+      /*
+      else{
+        //Now do the 2 TPOT layers
+        std::cout << "TPC layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+        //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+        uint8_t TPOTindex = layer - 48;
+        trackContainer->setLocalX(TPOTindex, cluster->getLocalX());
+        trackContainer->setLocalY(TPOTindex, cluster->getLocalY());
+        trackContainer->setSubSurfKey(TPOTindex, cluster->getSubSurfKey());
+        trackContainer->setPhiError(TPOTindex, cluster->getRPhiError());
+        trackContainer->setZError(TPOTindex, cluster->getZError());
+        trackContainer->setAdc(TPOTindex, cluster->getAdc());
+        trackContainer->setMaxAdc(TPOTindex, cluster->getMaxAdc());
+        trackContainer->setPhiSize(TPOTindex, cluster->getPhiSize());
+        trackContainer->setZSize(TPOTindex, cluster->getZSize());
+        trackContainer->setOverlap(TPOTindex, cluster->getOverlap());
+        trackContainer->setEdge(TPOTindex, cluster->getEdge());
+
+        std::cout << "TPC Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+        std::cout << "TPC Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+        trackContainer->setValid(TPOTindex, true);
+
+        if(trackContainer->getValid(TPOTindex)){
+          std::cout << "Valid is true" << std::endl;
+        }
+
+        trackContainer->setSide(TPOTindex, TrkrDefs::getZElement(cluster_key));
+        trackContainer->setSectorId(TPOTindex, TrkrDefs::getPhiElement(cluster_key));
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      //TrkrDefs::
+
+      //loop over clusterKeys to match
+      }
+
+      */
+      //}
+    }
+ // }
+  }
+
+  /*
+  if(trackContainer->get_does_silicon_seed_exist()){
+    std::cout << "We are about to loop over cluster keys in Silicon Seed" << std::endl;
+  SiliconSeed->identify();
+    for( auto key_iter = SiliconSeed->begin_cluster_keys(); key_iter != SiliconSeed->end_cluster_keys(); ++key_iter )
+    {
+      const auto& cluster_key = *key_iter;
+      auto cluster = m_cluster_map->findCluster( cluster_key );
+      if( !cluster )
+      {
+        std::cout << "DSTTrackArrayWriter::evaluate_tracks - unable to find cluster for key " << cluster_key << std::endl;
+        continue;
+      }
+      if(!m_reduced_cluster_map->findCluster(cluster_key)){
+        m_cluster = new TrkrClusterv5();
+        m_cluster->CopyFrom(cluster);
+        m_reduced_cluster_map->addClusterSpecifyKey(cluster_key,m_cluster);
+        if(m_write_ntp_reduced_cluster){   
+            fillNtpReducedCluster(m_cluster->getLocalX(), m_cluster->getLocalY());
+        }
+        //m_reduced_cluster_map->addClusterSpecifyKey(cluster_key, cluster);
+      }
+      //store cluster key
+      //silicon_cluster_keys->insert_cluster_key(cluster_key);
+
+      //store information in track array
+      std::cout << "Silicon clusterkey: " << cluster_key <<"\n";
+
+      std::cout << "Silicon subsurfkey: " << cluster->getSubSurfKey() << std::endl;
+      uint8_t layer = TrkrDefs::getLayer(cluster_key);
+
+      std::cout << "Silicon layer: " << unsigned(TrkrDefs::getLayer(cluster_key)) << std::endl;
+      //std::cout << "cluster position 0: " << cluster->getPosition(0) <<"\n";
+      trackContainer->setLocalX(layer, cluster->getPosition(0));
+      trackContainer->setLocalY(layer, cluster->getPosition(1));
+      trackContainer->setSubSurfKey(layer, cluster->getSubSurfKey());
+      trackContainer->setPhiError(layer, cluster->getRPhiError());
+      trackContainer->setZError(layer, cluster->getZError());
+      trackContainer->setAdc(layer, cluster->getAdc());
+      trackContainer->setMaxAdc(layer, cluster->getMaxAdc());
+      trackContainer->setPhiSize(layer, cluster->getPhiSize());
+      trackContainer->setZSize(layer, cluster->getZSize());
+      trackContainer->setOverlap(layer, cluster->getOverlap());
+      trackContainer->setEdge(layer, cluster->getEdge());
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      trackContainer->setValid(layer, true);
+
+      std::cout << "Silicon Side: " << unsigned(TrkrDefs::getZElement(cluster_key)) << std::endl;
+      std::cout << "Silicon Sector Id: " << unsigned(TrkrDefs::getPhiElement(cluster_key)) << std::endl;
+
+      trackContainer->setSide(layer, TrkrDefs::getZElement(cluster_key));
+      trackContainer->setSectorId(layer, TrkrDefs::getPhiElement(cluster_key));
+
+      //trackContainer->setClusKey(layer, cluster_key);
+
+      
+    }
+  }
+  */
+   
+    
+
+      /*
+      // find track state that is the closest to cluster
+      // this assumes that both clusters and states are sorted along r
+      const auto radius( cluster_struct.r );
+      float dr_min = -1;
+      for( auto iter = state_iter; iter != track->end_states(); ++iter )
+      {
+        const auto dr = std::abs( radius - get_r( iter->second->get_x(), iter->second->get_y() ) );
+        if( dr_min < 0 || dr < dr_min )
+        {
+          state_iter = iter;
+          dr_min = dr;
+        } else break;
+      }
+
+      // store track state in cluster struct
+      add_trk_information( cluster_struct, state_iter->second );
+
+      // add to track
+      track_struct.clusters.push_back( cluster_struct );
+      */
+      m_track_array_container_v10->add_trackarray(iTrk, trackContainer);
       //std::cout<< "track chisq: " << trackContainer->get_chisq() << std::endl;
       //std::cout<< "container chisq: " << (m_track_array_container_v6->get_trackarray(iTrk))->get_chisq() << std::endl;
       ++iTrk;

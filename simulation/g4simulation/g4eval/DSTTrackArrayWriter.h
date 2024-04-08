@@ -18,6 +18,9 @@
 #include <trackbase_historic/SvtxTrackArray_v5.h>
 #include <trackbase_historic/SvtxTrackArray_v6.h>
 #include <trackbase_historic/SvtxTrackArray_v7.h>
+#include <trackbase_historic/SvtxTrackArray_v8.h>
+#include <trackbase_historic/SvtxTrackArray_v9.h>
+#include <trackbase_historic/SvtxTrackArray_v10.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v1.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v2.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v3.h>
@@ -25,6 +28,9 @@
 #include <trackbase_historic/SvtxTrackArrayContainer_v5.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v6.h>
 #include <trackbase_historic/SvtxTrackArrayContainer_v7.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v8.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v9.h>
+#include <trackbase_historic/SvtxTrackArrayContainer_v10.h>
 //#include <trackbase_historic/TrkrClusterContainer.h>
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/TrackFitUtils.h>
@@ -94,7 +100,11 @@ class DSTTrackArrayWriter : public SubsysReco
 
   void set_write_ntuple_reduced_cluster(bool flag) {m_write_ntp_reduced_cluster = flag;}
 
+  void set_write_ntuple_coordinate_info(bool flag) {m_write_ntp_coordinate_info = flag;}
+
   void set_ntuple_reduced_cluster_outfile(std::string name){ntp_reduced_cluster_name = name;}
+
+  void set_ntuple_coordinate_info_outfile(std::string name){ntp_coordinate_info_name = name;}
 
   private:
 
@@ -115,12 +125,19 @@ class DSTTrackArrayWriter : public SubsysReco
   void no_silicon_evaluate_limited_trackv5_and_cluster_minimum_residual_compression();
   void no_silicon_evaluate_limited_trackv6_and_cluster_minimum_residual_compression();
   void no_silicon_evaluate_limited_trackv7_and_cluster_minimum_residual_compression();
+  void no_silicon_evaluate_limited_trackv8_and_cluster_minimum_residual_compression();
+  void no_silicon_evaluate_limited_trackv9_and_cluster_minimum_no_residual_compression();
+  void no_silicon_evaluate_limited_trackv9_and_cluster_minimum_residual_compression();
+  void no_silicon_evaluate_limited_trackv10_and_cluster_minimum_compression();
+  void no_silicon_evaluate_limited_trackv10_and_cluster_minimum_residual_compression();
 
   Acts::Vector3 get_helix_surface_intersection(Surface, std::vector<float>&, Acts::Vector3);
 
   void fillNtpResidual(float /*xresidual*/, float /*yresidual*/, float /*radius*/, float /*local x*/, float /*local y*/, float /*globalz*/, float /*localx*/, float /*localy*/, float /*phi*/, float /*TrackSeedR*/);
 
   void fillNtpReducedCluster(float /*xKey*/, float /*yKey*/);
+
+  void fillNtpCoordinateInfo(float /*xLocal*/, float /*yLocal*/, float /*xResidual*/, float /*yResidual*/, float /*float xResolution*/, float /*yResolution*/);
 
   SvtxTrackArrayContainer_v1* m_track_array_container = nullptr;
 
@@ -135,6 +152,12 @@ class DSTTrackArrayWriter : public SubsysReco
   SvtxTrackArrayContainer_v6* m_track_array_container_v6 = nullptr;
 
   SvtxTrackArrayContainer_v7* m_track_array_container_v7 = nullptr;
+  
+  SvtxTrackArrayContainer_v8* m_track_array_container_v8 = nullptr;
+
+  SvtxTrackArrayContainer_v9* m_track_array_container_v9 = nullptr;
+
+  SvtxTrackArrayContainer_v10* m_track_array_container_v10 = nullptr;
 
   //SvtxTrackArrayContainer_v5* m_track_array_container_v5 = new SvtxTrackArrayContainer_v5();
 
@@ -161,11 +184,17 @@ class DSTTrackArrayWriter : public SubsysReco
 
   TNtuple *ntp_reduced_cluster{nullptr};
 
+  TNtuple *ntp_coordinate_info{nullptr};
+
   bool m_write_ntp_residual = false;
 
   bool m_write_ntp_reduced_cluster = false;
 
+  bool m_write_ntp_coordinate_info = false;
+
   std::string ntp_reduced_cluster_name = "ReducedClusterTuple";
+
+  std::string ntp_coordinate_info_name = "CoordinateInfoTuple";
 
   DSTCompressor* m_compressor{};
 
